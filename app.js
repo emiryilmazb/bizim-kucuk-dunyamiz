@@ -8,22 +8,19 @@
 
     // ---------- State ----------
     let map;
+    let mapBounds;
     let characterMarker;
     let memoryMarkers = [];
     let triggeredMemories = new Set();
     let discoveredCount = 0;
     let surpriseShown = false;
-    const PROXIMITY_THRESHOLD = 500; // metre — haritada daha rahat tetikleme
+    const PROXIMITY_THRESHOLD = 500; // metre
 
-    // ---------- İstanbul Sınırları ----------
-    const ISTANBUL_BOUNDS = L.latLngBounds(
-        L.latLng(40.88, 28.6),  // güneybatı
-        L.latLng(41.22, 29.35)  // kuzeydoğu
-    );
-    const ISTANBUL_CENTER = [41.035, 29.01];
-    const MIN_ZOOM = 11;
+    // ---------- Zoom Sınırları ----------
+    const MIN_ZOOM = 12;
     const MAX_ZOOM = 18;
-    const DEFAULT_ZOOM = 12;
+    const DEFAULT_ZOOM = 13;
+
 
     // ---------- DOM Elements ----------
     const ctaBtn = document.getElementById("cta-btn");
@@ -129,32 +126,42 @@
         animate();
     }
 
+
     // ---------- Map Setup ----------
     function setupMap() {
+        // Sınırları anı noktalarından hesapla + padding
+        const pointBounds = L.latLngBounds(anilar.map((a) => [a.lat, a.lng]));
+        const paddedBounds = pointBounds.pad(0.25);
+        mapBounds = paddedBounds; // modül seviyesinde sakla
+
         map = L.map("map", {
-            center: ISTANBUL_CENTER,
+            center: pointBounds.getCenter(),
             zoom: DEFAULT_ZOOM,
             minZoom: MIN_ZOOM,
             maxZoom: MAX_ZOOM,
-            maxBounds: ISTANBUL_BOUNDS,
+            maxBounds: paddedBounds,
             maxBoundsViscosity: 1.0,
+            bounceAtZoomLimits: true,
             zoomControl: false,
             attributionControl: false,
         });
 
-        // Zoom kontrolünü sağ alta koy (mobilde sol üst CTA ile çakışmasın)
+        // Sert sınır — harita kaydırılamaz
+        map.on("drag", function () {
+            map.panInsideBounds(paddedBounds, { animate: false });
+        });
+
+        // Zoom kontrolünü sağ alta koy
         L.control.zoom({ position: "bottomright" }).addTo(map);
-        L.control.attribution({ position: "bottomright", prefix: false }).addTo(map);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© OpenStreetMap",
             maxZoom: MAX_ZOOM,
+            bounds: paddedBounds,
         }).addTo(map);
 
-        // Haritayı İstanbul'a sığdır
-        map.fitBounds(
-            L.latLngBounds(anilar.map((a) => [a.lat, a.lng])).pad(0.15)
-        );
+        // Haritayı noktaları gösterecek şekilde sığdır
+        map.fitBounds(pointBounds.pad(0.15));
 
         addMemoryMarkers();
 
@@ -163,6 +170,7 @@
         const startLng = (anilar[0].lng + anilar[1].lng) / 2;
         addCharacterMarker(startLat, startLng);
     }
+
 
     // ---------- Memory Markers ----------
     function addMemoryMarkers() {
@@ -223,11 +231,11 @@
         });
 
         characterMarker.on("drag", (e) => {
-            // Karakteri İstanbul sınırları içinde tut
+            // Karakteri harita sınırları içinde tut
             let latlng = e.target.getLatLng();
-            if (!ISTANBUL_BOUNDS.contains(latlng)) {
-                const clampedLat = Math.max(ISTANBUL_BOUNDS.getSouth(), Math.min(ISTANBUL_BOUNDS.getNorth(), latlng.lat));
-                const clampedLng = Math.max(ISTANBUL_BOUNDS.getWest(), Math.min(ISTANBUL_BOUNDS.getEast(), latlng.lng));
+            if (mapBounds && !mapBounds.contains(latlng)) {
+                const clampedLat = Math.max(mapBounds.getSouth(), Math.min(mapBounds.getNorth(), latlng.lat));
+                const clampedLng = Math.max(mapBounds.getWest(), Math.min(mapBounds.getEast(), latlng.lng));
                 e.target.setLatLng([clampedLat, clampedLng]);
                 latlng = e.target.getLatLng();
             }
