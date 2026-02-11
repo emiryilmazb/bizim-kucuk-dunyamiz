@@ -1,6 +1,6 @@
 // ==========================================
 // Bizim Küçük Dünyamız 🌍💛
-// Valentine's Day Game — Main Logic v3
+// Valentine's Day Game — v4
 // ==========================================
 
 (function () {
@@ -14,19 +14,25 @@
     let triggeredMemories = new Set();
     let discoveredCount = 0;
     let surpriseShown = false;
-    let distanceInterval;
     let moveAnimation = null;
+
+    // Keyboard / D-Pad state
     let activeKeys = new Set();
-    let keyMoveInterval = null;
+    let keyMoveRAF = null;
+    let lastMoveTime = 0;
+
+    // Trail
+    let trailPoints = [];
+    let trailLine = null;
 
     const PROXIMITY_THRESHOLD = 500;
     const NEARBY_THRESHOLD = 1500;
     const MIN_ZOOM = 12;
     const MAX_ZOOM = 18;
     const DEFAULT_ZOOM = 13;
-    const MOVE_SPEED = 0.0004;       // derece/frame — keyboard & dpad
-    const MOVE_INTERVAL = 30;        // ms — keyboard & dpad frame hızı
-    const TAP_MOVE_DURATION = 1500;   // ms — tap-to-move animasyon süresi
+    const MOVE_SPEED = 0.00025;       // derece/frame
+    const CAMERA_DEADZONE = 0.35;     // ekranın %35'i — kamera bu çerçeve dışına çıkınca takip eder
+    const TRAIL_MAX = 15;
 
     // ---------- DOM ----------
     const splash = document.getElementById("splash");
@@ -49,12 +55,8 @@
     const modalKapat = document.getElementById("modal-kapat");
     const modalTekrar = document.getElementById("modal-tekrar");
     const btnCompass = document.getElementById("btn-compass");
-
-    // D-Pad buttons
-    const dpadUp = document.getElementById("dpad-up");
-    const dpadDown = document.getElementById("dpad-down");
-    const dpadLeft = document.getElementById("dpad-left");
-    const dpadRight = document.getElementById("dpad-right");
+    const warmthDot = document.getElementById("warmth-dot");
+    const warmthText = document.getElementById("warmth-label");
 
     // ---------- Init ----------
     function init() {
@@ -76,41 +78,39 @@
         setupKeyboard();
         setupDpad();
         updateScore();
-        startDistanceTracker();
-        setTimeout(() => showToast("💡", "Haritaya dokun veya kontrolleri kullan!"), 800);
+        setTimeout(() => showToast("💡", "Haritaya dokun veya yön tuşlarını kullan!"), 800);
     }
 
-    // ---------- Particles ----------
+    // ---------- Particles (Splash) ----------
     function setupParticles() {
         const canvas = document.getElementById("particles-canvas");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
         let particles = [];
-
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         resize();
         window.addEventListener("resize", resize);
 
-        class Particle {
+        class P {
             constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 4 + 1;
+                this.s = Math.random() * 4 + 1;
                 this.vy = -(Math.random() * 0.5 + 0.1);
                 this.vx = (Math.random() - 0.5) * 0.3;
-                this.opacity = Math.random() * 0.5 + 0.1;
-                this.hue = Math.random() > 0.5 ? 0 : 30;
+                this.o = Math.random() * 0.5 + 0.1;
+                this.h = Math.random() > 0.5 ? 0 : 30;
             }
             update() {
-                this.y += this.vy; this.x += this.vx; this.opacity -= 0.001;
-                if (this.y < -10 || this.opacity <= 0) { this.reset(); this.y = canvas.height + 10; }
+                this.y += this.vy; this.x += this.vx; this.o -= 0.001;
+                if (this.y < -10 || this.o <= 0) { this.reset(); this.y = canvas.height + 10; }
             }
             draw() {
-                ctx.save(); ctx.globalAlpha = this.opacity;
-                ctx.fillStyle = `hsl(${this.hue}, 80%, 80%)`;
+                ctx.save(); ctx.globalAlpha = this.o;
+                ctx.fillStyle = `hsl(${this.h},80%,80%)`;
+                const s = this.s;
                 ctx.beginPath();
-                const s = this.size;
                 ctx.moveTo(this.x, this.y + s * 0.3);
                 ctx.bezierCurveTo(this.x, this.y, this.x - s, this.y, this.x - s, this.y + s * 0.3);
                 ctx.bezierCurveTo(this.x - s, this.y + s * 0.8, this.x, this.y + s * 1.2, this.x, this.y + s * 1.5);
@@ -119,16 +119,17 @@
                 ctx.fill(); ctx.restore();
             }
         }
-        for (let i = 0; i < 25; i++) particles.push(new Particle());
-        function animate() {
+        for (let i = 0; i < 25; i++) particles.push(new P());
+        (function anim() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animate);
-        }
-        animate();
+            requestAnimationFrame(anim);
+        })();
     }
 
-    // ---------- Map Setup ----------
+    // ==========================================
+    //  MAP SETUP
+    // ==========================================
     function setupMap() {
         const pointBounds = L.latLngBounds(anilar.map(a => [a.lat, a.lng]));
         const paddedBounds = pointBounds.pad(0.3);
@@ -167,12 +168,139 @@
     }
 
     // ==========================================
+    //  SMOOTH CAMERA  — deadzone yaklaşımı
+    //  Kamera sadece karakter ekranın kenarına
+    //  yaklaştığında hareket eder → titreme YOK
+    // ==========================================
+    function smoothCamera(charLL) {
+        const mapSize = map.getSize();
+        const charPx = map.latLngToContainerPoint(charLL);
+        const dx = mapSize.x * CAMERA_DEADZONE;
+        const dy = mapSize.y * CAMERA_DEADZONE;
+
+        // Karakter ekran merkezine göre deadzone dışında mı?
+        const cx = mapSize.x / 2;
+        const cy = mapSize.y / 2;
+        const offX = charPx.x - cx;
+        const offY = charPx.y - cy;
+
+        if (Math.abs(offX) > dx || Math.abs(offY) > dy) {
+            // Sadece deadzone sınırına kadar kaydır (tam merkeze değil)
+            const targetX = offX > dx ? offX - dx : (offX < -dx ? offX + dx : 0);
+            const targetY = offY > dy ? offY - dy : (offY < -dy ? offY + dy : 0);
+
+            const currentCenter = map.getCenter();
+            const currentCenterPx = map.latLngToContainerPoint(currentCenter);
+            const newCenterPx = L.point(currentCenterPx.x + targetX, currentCenterPx.y + targetY);
+            const newCenter = map.containerPointToLatLng(newCenterPx);
+
+            map.setView(newCenter, map.getZoom(), { animate: false });
+        }
+    }
+
+    // ==========================================
+    //  CHARACTER TRAIL — arkasında kalp izi
+    // ==========================================
+    function updateTrail(ll) {
+        trailPoints.push([ll.lat, ll.lng]);
+        if (trailPoints.length > TRAIL_MAX) trailPoints.shift();
+
+        if (trailLine) map.removeLayer(trailLine);
+        if (trailPoints.length > 1) {
+            trailLine = L.polyline(trailPoints, {
+                color: "#e8807f",
+                weight: 3,
+                opacity: 0.25,
+                dashArray: "4,8",
+                lineCap: "round",
+                interactive: false,
+            }).addTo(map);
+        }
+    }
+
+    // ==========================================
+    //  WARMTH INDICATOR — sıcak/soğuk
+    // ==========================================
+    function updateWarmth(charLL) {
+        let closestDist = Infinity;
+        memoryMarkers.forEach(m => {
+            if (triggeredMemories.has(m._aniData.id)) return;
+            const d = charLL.distanceTo(m.getLatLng());
+            if (d < closestDist) closestDist = d;
+        });
+
+        if (closestDist > 50000 || closestDist === Infinity) {
+            if (distanceBadge) distanceBadge.style.opacity = "0";
+            return;
+        }
+
+        // Sıcaklık hesapla (0=soğuk, 1=sıcak)
+        const maxDist = 5000; // 5km'den uzak = tam soğuk
+        const warmth = Math.max(0, Math.min(1, 1 - closestDist / maxDist));
+
+        // Mesafe göster
+        const m = Math.round(closestDist);
+        if (distanceText) {
+            distanceText.textContent = m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`;
+        }
+
+        // Sıcaklık rengi
+        if (warmthDot) {
+            if (warmth > 0.8) { warmthDot.textContent = "🔥"; warmthDot.className = "warmth-dot hot"; }
+            else if (warmth > 0.5) { warmthDot.textContent = "🟠"; warmthDot.className = "warmth-dot warm"; }
+            else if (warmth > 0.25) { warmthDot.textContent = "🟡"; warmthDot.className = "warmth-dot mild"; }
+            else { warmthDot.textContent = "🔵"; warmthDot.className = "warmth-dot cold"; }
+        }
+
+        if (warmthText) {
+            if (warmth > 0.8) warmthText.textContent = "Çok yakın!";
+            else if (warmth > 0.5) warmthText.textContent = "Yaklaşıyorsun!";
+            else if (warmth > 0.25) warmthText.textContent = "Ilık";
+            else warmthText.textContent = "Soğuk";
+        }
+
+        if (distanceBadge) distanceBadge.style.opacity = "1";
+
+        // Yön oku
+        let closest = null;
+        let cd = Infinity;
+        memoryMarkers.forEach(mk => {
+            if (triggeredMemories.has(mk._aniData.id)) return;
+            const d = charLL.distanceTo(mk.getLatLng());
+            if (d < cd) { cd = d; closest = mk; }
+        });
+        if (closest && distanceArrow) {
+            const mLL = closest.getLatLng();
+            const angle = Math.atan2(mLL.lng - charLL.lng, mLL.lat - charLL.lat) * (180 / Math.PI);
+            distanceArrow.style.transform = `rotate(${-angle + 180}deg)`;
+        }
+    }
+
+    // ==========================================
+    //  FLOATING EMOJIS — keşifte uçan emojiler
+    // ==========================================
+    function spawnFloatingEmojis(latlng, count) {
+        const emojis = ["💕", "💖", "✨", "💫", "🌸", "💝"];
+        const point = map.latLngToContainerPoint(latlng);
+
+        for (let i = 0; i < count; i++) {
+            const el = document.createElement("div");
+            el.className = "floating-emoji";
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = (point.x + (Math.random() - 0.5) * 60) + "px";
+            el.style.top = (point.y - 10) + "px";
+            el.style.setProperty("--dx", ((Math.random() - 0.5) * 80) + "px");
+            el.style.animationDelay = (i * 0.1) + "s";
+            document.getElementById("game").appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
+    }
+
+    // ==========================================
     //  TAP-TO-MOVE
     // ==========================================
     function onMapTap(e) {
-        // Eğer sheet/modal açıksa veya UI öğesine tıklandıysa, hareket ettirme
         if (sheet.classList.contains("show") || modalOverlay.classList.contains("show")) return;
-
         const target = clampToBounds(e.latlng);
         moveCharacterTo(target);
     }
@@ -182,180 +310,167 @@
 
         const start = characterMarker.getLatLng();
         const startTime = performance.now();
-
-        // Mesafeye göre süre ayarla
         const dist = start.distanceTo(targetLL);
-        const duration = Math.min(Math.max(dist * 2, 400), 3000);
+        const duration = Math.min(Math.max(dist * 1.5, 400), 3000);
 
-        // Hedef çizgisi göster
-        showMoveLine(start, targetLL);
+        setCharacterMoving(true);
 
         function step(now) {
-            const elapsed = now - startTime;
-            const t = Math.min(elapsed / duration, 1);
-            // easeOutCubic
+            const t = Math.min((now - startTime) / duration, 1);
             const ease = 1 - Math.pow(1 - t, 3);
-
             const lat = start.lat + (targetLL.lat - start.lat) * ease;
             const lng = start.lng + (targetLL.lng - start.lng) * ease;
             const pos = L.latLng(lat, lng);
 
             characterMarker.setLatLng(pos);
-            map.panTo(pos, { animate: false });
+            smoothCamera(pos);
+            updateTrail(pos);
             checkProximity(pos);
             updateNearbyGlow(pos);
+            updateWarmth(pos);
 
             if (t < 1) {
                 moveAnimation = requestAnimationFrame(step);
             } else {
                 moveAnimation = null;
-                removeMoveLine();
+                setCharacterMoving(false);
             }
         }
         moveAnimation = requestAnimationFrame(step);
     }
 
-    // Hareket çizgisi
-    let moveLine = null;
-    function showMoveLine(from, to) {
-        removeMoveLine();
-        moveLine = L.polyline([from, to], {
-            color: "#e8807f",
-            weight: 2,
-            opacity: 0.4,
-            dashArray: "6, 8",
-        }).addTo(map);
-    }
-    function removeMoveLine() {
-        if (moveLine) { map.removeLayer(moveLine); moveLine = null; }
+    // ==========================================
+    //  CHARACTER MOVING STATE
+    // ==========================================
+    function setCharacterMoving(moving) {
+        const el = characterMarker ? characterMarker.getElement() : null;
+        if (!el) return;
+        if (moving) el.classList.add("moving");
+        else el.classList.remove("moving");
     }
 
     // ==========================================
-    //  KEYBOARD CONTROLS (Desktop)
+    //  KEYBOARD CONTROLS
     // ==========================================
     function setupKeyboard() {
         document.addEventListener("keydown", e => {
             if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d"].includes(e.key)) {
                 e.preventDefault();
                 activeKeys.add(e.key.toLowerCase());
-                startKeyMove();
+                startContinuousMove();
             }
         });
         document.addEventListener("keyup", e => {
             activeKeys.delete(e.key.toLowerCase());
-            if (activeKeys.size === 0) stopKeyMove();
+            if (activeKeys.size === 0) stopContinuousMove();
         });
     }
 
-    function startKeyMove() {
-        if (keyMoveInterval) return;
-        // Tap-to-move'u iptal et
-        if (moveAnimation) { cancelAnimationFrame(moveAnimation); moveAnimation = null; removeMoveLine(); }
-
-        keyMoveInterval = setInterval(() => {
-            if (!characterMarker) return;
-            let ll = characterMarker.getLatLng();
-            let dlat = 0, dlng = 0;
-
-            if (activeKeys.has("arrowup") || activeKeys.has("w")) dlat += MOVE_SPEED;
-            if (activeKeys.has("arrowdown") || activeKeys.has("s")) dlat -= MOVE_SPEED;
-            if (activeKeys.has("arrowleft") || activeKeys.has("a")) dlng -= MOVE_SPEED;
-            if (activeKeys.has("arrowright") || activeKeys.has("d")) dlng += MOVE_SPEED;
-
-            if (dlat === 0 && dlng === 0) return;
-
-            const newLL = clampToBounds(L.latLng(ll.lat + dlat, ll.lng + dlng));
-            characterMarker.setLatLng(newLL);
-            map.panTo(newLL, { animate: false });
-            checkProximity(newLL);
-            updateNearbyGlow(newLL);
-        }, MOVE_INTERVAL);
-    }
-
-    function stopKeyMove() {
-        clearInterval(keyMoveInterval);
-        keyMoveInterval = null;
-    }
-
     // ==========================================
-    //  D-PAD (Mobile On-Screen Controls)
+    //  D-PAD
     // ==========================================
     function setupDpad() {
         const dirs = {
-            "dpad-up": { dlat: MOVE_SPEED, dlng: 0 },
-            "dpad-down": { dlat: -MOVE_SPEED, dlng: 0 },
-            "dpad-left": { dlat: 0, dlng: -MOVE_SPEED },
-            "dpad-right": { dlat: 0, dlng: MOVE_SPEED },
+            "dpad-up": { dlat: 1, dlng: 0 },
+            "dpad-down": { dlat: -1, dlng: 0 },
+            "dpad-left": { dlat: 0, dlng: -1 },
+            "dpad-right": { dlat: 0, dlng: 1 },
         };
 
-        let dpadInterval = null;
-        let activeTouches = new Set();
-
-        function startDpadMove(dirId) {
-            activeTouches.add(dirId);
-            if (moveAnimation) { cancelAnimationFrame(moveAnimation); moveAnimation = null; removeMoveLine(); }
-            if (dpadInterval) return;
-
-            dpadInterval = setInterval(() => {
-                if (!characterMarker || activeTouches.size === 0) return;
-                let ll = characterMarker.getLatLng();
-                let dlat = 0, dlng = 0;
-                activeTouches.forEach(id => {
-                    const d = dirs[id];
-                    if (d) { dlat += d.dlat; dlng += d.dlng; }
-                });
-                const newLL = clampToBounds(L.latLng(ll.lat + dlat, ll.lng + dlng));
-                characterMarker.setLatLng(newLL);
-                map.panTo(newLL, { animate: false });
-                checkProximity(newLL);
-                updateNearbyGlow(newLL);
-            }, MOVE_INTERVAL);
-        }
-
-        function stopDpadMove(dirId) {
-            activeTouches.delete(dirId);
-            if (activeTouches.size === 0 && dpadInterval) {
-                clearInterval(dpadInterval);
-                dpadInterval = null;
-            }
-        }
-
-        // Tüm yönler için event listener
         Object.keys(dirs).forEach(id => {
             const btn = document.getElementById(id);
             if (!btn) return;
 
-            // Touch
-            btn.addEventListener("touchstart", e => { e.preventDefault(); startDpadMove(id); btn.classList.add("active"); }, { passive: false });
-            btn.addEventListener("touchend", e => { e.preventDefault(); stopDpadMove(id); btn.classList.remove("active"); }, { passive: false });
-            btn.addEventListener("touchcancel", e => { stopDpadMove(id); btn.classList.remove("active"); });
+            function down(e) { e.preventDefault(); activeKeys.add(id); btn.classList.add("active"); startContinuousMove(); }
+            function up(e) { if (e) e.preventDefault(); activeKeys.delete(id); btn.classList.remove("active"); if (activeKeys.size === 0) stopContinuousMove(); }
 
-            // Mouse (fallback desktop)
-            btn.addEventListener("mousedown", e => { e.preventDefault(); startDpadMove(id); btn.classList.add("active"); });
-            btn.addEventListener("mouseup", e => { stopDpadMove(id); btn.classList.remove("active"); });
-            btn.addEventListener("mouseleave", e => { stopDpadMove(id); btn.classList.remove("active"); });
+            btn.addEventListener("touchstart", down, { passive: false });
+            btn.addEventListener("touchend", up, { passive: false });
+            btn.addEventListener("touchcancel", up);
+            btn.addEventListener("mousedown", down);
+            btn.addEventListener("mouseup", up);
+            btn.addEventListener("mouseleave", up);
         });
     }
 
     // ==========================================
-    //  BOUNDARY HELPER
+    //  CONTINUOUS MOVE  (rAF — titreme yok)
+    // ==========================================
+    const dirMap = {
+        "arrowup": [1, 0], "w": [1, 0], "dpad-up": [1, 0],
+        "arrowdown": [-1, 0], "s": [-1, 0], "dpad-down": [-1, 0],
+        "arrowleft": [0, -1], "a": [0, -1], "dpad-left": [0, -1],
+        "arrowright": [0, 1], "d": [0, 1], "dpad-right": [0, 1],
+    };
+
+    function startContinuousMove() {
+        if (moveAnimation) { cancelAnimationFrame(moveAnimation); moveAnimation = null; }
+        if (keyMoveRAF) return;
+        setCharacterMoving(true);
+        lastMoveTime = performance.now();
+
+        function tick(now) {
+            const dt = Math.min((now - lastMoveTime) / 16.67, 3); // normalize to ~60fps
+            lastMoveTime = now;
+
+            let dlat = 0, dlng = 0;
+            activeKeys.forEach(k => {
+                const d = dirMap[k];
+                if (d) { dlat += d[0]; dlng += d[1]; }
+            });
+
+            if (dlat === 0 && dlng === 0) { keyMoveRAF = requestAnimationFrame(tick); return; }
+
+            // Normalize diagonal
+            if (dlat !== 0 && dlng !== 0) {
+                const len = Math.sqrt(dlat * dlat + dlng * dlng);
+                dlat /= len; dlng /= len;
+            }
+
+            const ll = characterMarker.getLatLng();
+            const newLL = clampToBounds(L.latLng(
+                ll.lat + dlat * MOVE_SPEED * dt,
+                ll.lng + dlng * MOVE_SPEED * dt
+            ));
+
+            characterMarker.setLatLng(newLL);
+            smoothCamera(newLL);
+
+            // Trail her ~150ms
+            if (now - (tick._lastTrail || 0) > 150) {
+                updateTrail(newLL);
+                tick._lastTrail = now;
+            }
+
+            checkProximity(newLL);
+            updateNearbyGlow(newLL);
+            updateWarmth(newLL);
+
+            keyMoveRAF = requestAnimationFrame(tick);
+        }
+        keyMoveRAF = requestAnimationFrame(tick);
+    }
+
+    function stopContinuousMove() {
+        if (keyMoveRAF) { cancelAnimationFrame(keyMoveRAF); keyMoveRAF = null; }
+        setCharacterMoving(false);
+    }
+
+    // ==========================================
+    //  BOUNDARY CLAMP
     // ==========================================
     function clampToBounds(ll) {
         if (!mapBounds) return ll;
-        // İç sınır — kenardan biraz içeride tut
-        const inset = 0.003; // ~330m iç padding
-        const minLat = mapBounds.getSouth() + inset;
-        const maxLat = mapBounds.getNorth() - inset;
-        const minLng = mapBounds.getWest() + inset;
-        const maxLng = mapBounds.getEast() - inset;
-
+        const inset = 0.003;
         return L.latLng(
-            Math.max(minLat, Math.min(maxLat, ll.lat)),
-            Math.max(minLng, Math.min(maxLng, ll.lng))
+            Math.max(mapBounds.getSouth() + inset, Math.min(mapBounds.getNorth() - inset, ll.lat)),
+            Math.max(mapBounds.getWest() + inset, Math.min(mapBounds.getEast() - inset, ll.lng))
         );
     }
 
-    // ---------- Memory Markers ----------
+    // ==========================================
+    //  MEMORY MARKERS
+    // ==========================================
     function addMemoryMarkers() {
         anilar.forEach(ani => {
             const icon = L.divIcon({
@@ -366,61 +481,52 @@
             });
 
             const marker = L.marker([ani.lat, ani.lng], { icon, interactive: false }).addTo(map);
-
-            marker.bindPopup(`<div class="popup-content">
-        <h3>${ani.baslik}</h3>
-        ${ani.tarih ? `<div class="popup-date">📅 ${ani.tarih}</div>` : ""}
-      </div>`, { closeButton: true, maxWidth: 200, autoPan: false });
-
+            marker.bindPopup(`<div class="popup-content"><h3>${ani.baslik}</h3>${ani.tarih ? `<div class="popup-date">📅 ${ani.tarih}</div>` : ""}</div>`, { closeButton: true, maxWidth: 200, autoPan: false });
             marker._aniData = ani;
             memoryMarkers.push(marker);
         });
     }
 
-    // ---------- Character Marker ----------
+    // ==========================================
+    //  CHARACTER MARKER
+    // ==========================================
     function addCharacterMarker(lat, lng) {
-        const charIcon = L.divIcon({
-            className: "heart-marker",
-            html: "💑",
-            iconSize: [44, 44],
-            iconAnchor: [22, 22],
-        });
-
         characterMarker = L.marker([lat, lng], {
-            icon: charIcon,
+            icon: L.divIcon({
+                className: "heart-marker",
+                html: "💑",
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+            }),
             draggable: true,
-            autoPan: true,
-            autoPanPadding: [60, 60],
-            autoPanSpeed: 10,
+            autoPan: false, // Kendi smooth camera'mızı kullanıyoruz
         }).addTo(map);
 
-        // Drag hala çalışır (fallback)
         characterMarker.on("dragstart", () => {
-            if (moveAnimation) { cancelAnimationFrame(moveAnimation); moveAnimation = null; removeMoveLine(); }
+            if (moveAnimation) { cancelAnimationFrame(moveAnimation); moveAnimation = null; }
+            if (keyMoveRAF) stopContinuousMove();
             map.dragging.disable();
-            map.closePopup();
-            const el = characterMarker.getElement();
-            if (el) el.classList.add("dragging");
+            setCharacterMoving(true);
         });
 
         characterMarker.on("drag", e => {
             const ll = clampToBounds(e.target.getLatLng());
             e.target.setLatLng(ll);
+            smoothCamera(ll);
             checkProximity(ll);
             updateNearbyGlow(ll);
+            updateWarmth(ll);
         });
 
-        characterMarker.on("dragend", e => {
+        characterMarker.on("dragend", () => {
             map.dragging.enable();
-            const el = characterMarker.getElement();
-            if (el) el.classList.remove("dragging");
-            const ll = e.target.getLatLng();
-            checkProximity(ll);
-            updateNearbyGlow(ll);
+            setCharacterMoving(false);
         });
     }
 
-    // ---------- Proximity Check ----------
+    // ==========================================
+    //  PROXIMITY CHECK
+    // ==========================================
     function checkProximity(charLL) {
         memoryMarkers.forEach(marker => {
             const ani = marker._aniData;
@@ -440,62 +546,59 @@
                 marker.openPopup();
                 flashScreen();
                 updateScore();
+                spawnFloatingEmojis(marker.getLatLng(), 6);
+
+                // Vibrate on mobile
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
                 if (ani.surpriz) {
                     showToast("✨", "Sürpriz noktasını buldun!");
                     showSurpriseButton();
                 } else {
                     showToast("💕", `"${ani.baslik}" keşfedildi!`);
-                    showSheet(ani);
+                    setTimeout(() => showSheet(ani), 400);
                 }
 
                 if (discoveredCount === anilar.length) {
-                    setTimeout(() => launchConfetti(), 500);
+                    setTimeout(() => launchConfetti(), 600);
                 }
             }
         });
     }
 
-    // ---------- Nearby Glow + Distance ----------
+    // ==========================================
+    //  NEARBY GLOW
+    // ==========================================
     function updateNearbyGlow(charLL) {
-        let closest = null, closestDist = Infinity;
-
         memoryMarkers.forEach(marker => {
             const ani = marker._aniData;
             if (triggeredMemories.has(ani.id)) return;
             const d = charLL.distanceTo(marker.getLatLng());
-            if (d < closestDist) { closestDist = d; closest = marker; }
             const el = marker.getElement();
             if (!el) return;
             if (d < NEARBY_THRESHOLD) el.classList.add("nearby");
             else el.classList.remove("nearby");
         });
-
-        if (closest && closestDist < 50000) {
-            const m = Math.round(closestDist);
-            distanceText.textContent = m >= 1000 ? `En yakın: ${(m / 1000).toFixed(1)} km` : `En yakın: ${m} m`;
-            const mLL = closest.getLatLng();
-            const angle = Math.atan2(mLL.lng - charLL.lng, mLL.lat - charLL.lat) * (180 / Math.PI);
-            distanceArrow.style.transform = `rotate(${-angle + 180}deg)`;
-            distanceBadge.style.opacity = "1";
-        } else {
-            distanceBadge.style.opacity = "0";
-        }
     }
 
-    function startDistanceTracker() {
-        distanceInterval = setInterval(() => {
-            if (characterMarker) updateNearbyGlow(characterMarker.getLatLng());
-        }, 1000);
-    }
-
-    // ---------- Score ----------
+    // ==========================================
+    //  SCORE
+    // ==========================================
     function updateScore() {
         scoreText.textContent = `${discoveredCount} / ${anilar.length}`;
         progressFill.style.width = Math.round((discoveredCount / anilar.length) * 100) + "%";
+
+        // Score pop animation
+        const hud = document.getElementById("hud-score");
+        if (hud) {
+            hud.classList.add("pop");
+            setTimeout(() => hud.classList.remove("pop"), 400);
+        }
     }
 
-    // ---------- Toast ----------
+    // ==========================================
+    //  TOAST
+    // ==========================================
     let toastTimer;
     function showToast(emoji, text) {
         toast.querySelector(".toast-emoji").textContent = emoji;
@@ -505,7 +608,9 @@
         toastTimer = setTimeout(() => toast.classList.remove("show"), 2500);
     }
 
-    // ---------- Flash ----------
+    // ==========================================
+    //  FLASH
+    // ==========================================
     function flashScreen() {
         discoveryFlash.classList.remove("show");
         void discoveryFlash.offsetWidth;
@@ -513,7 +618,9 @@
         setTimeout(() => discoveryFlash.classList.remove("show"), 700);
     }
 
-    // ---------- Bottom Sheet ----------
+    // ==========================================
+    //  BOTTOM SHEET
+    // ==========================================
     function showSheet(ani) {
         document.getElementById("ak-baslik").textContent = ani.baslik;
         const dateEl = document.getElementById("ak-tarih");
@@ -540,7 +647,9 @@
         sheetOverlay.classList.remove("show");
     }
 
-    // ---------- Surprise ----------
+    // ==========================================
+    //  SURPRISE
+    // ==========================================
     function showSurpriseButton() {
         if (surpriseShown) return;
         surprizContainer.classList.add("show");
@@ -554,47 +663,51 @@
         typewriterEffect(finalMesaj);
     }
 
-    function closeSurpriseModal() {
-        modalOverlay.classList.remove("show");
-    }
+    function closeSurpriseModal() { modalOverlay.classList.remove("show"); }
 
-    // ---------- Typewriter ----------
-    let twInterval;
+    // ==========================================
+    //  TYPEWRITER
+    // ==========================================
+    let twInt;
     function typewriterEffect(text) {
         modalMesaj.innerHTML = '<span class="cursor"></span>';
         let i = 0;
-        if (twInterval) clearInterval(twInterval);
-        twInterval = setInterval(() => {
+        if (twInt) clearInterval(twInt);
+        twInt = setInterval(() => {
             if (i < text.length) {
                 const c = modalMesaj.querySelector(".cursor");
                 if (c) c.insertAdjacentText("beforebegin", text[i]);
                 i++;
             } else {
-                clearInterval(twInterval);
+                clearInterval(twInt);
                 setTimeout(() => { const c = modalMesaj.querySelector(".cursor"); if (c) c.remove(); }, 2000);
             }
         }, 40);
     }
 
-    // ---------- Compass ----------
+    // ==========================================
+    //  COMPASS
+    // ==========================================
     function flyToNearest() {
         if (!characterMarker) return;
         const charLL = characterMarker.getLatLng();
-        let closest = null, closestDist = Infinity;
+        let closest = null, cd = Infinity;
         memoryMarkers.forEach(m => {
             if (triggeredMemories.has(m._aniData.id)) return;
             const d = charLL.distanceTo(m.getLatLng());
-            if (d < closestDist) { closestDist = d; closest = m; }
+            if (d < cd) { cd = d; closest = m; }
         });
         if (closest) {
             map.flyTo(closest.getLatLng(), 14, { duration: 0.8 });
-            showToast("🧭", "En yakın anıya yaklaş!");
+            showToast("🧭", "O tarafa git!");
         } else {
-            showToast("🎉", "Tüm anıları keşfettin!");
+            showToast("🎉", "Tüm anıları buldun!");
         }
     }
 
-    // ---------- Confetti ----------
+    // ==========================================
+    //  CONFETTI
+    // ==========================================
     function launchConfetti() {
         const canvas = document.getElementById("confetti-canvas");
         if (!canvas) return;
@@ -604,31 +717,27 @@
 
         const pieces = [];
         const colors = ["#e8807f", "#f4b5b4", "#d4a574", "#f0dfc8", "#fce4ec", "#f3e5f5", "#ff6b6b", "#ffd93d"];
-
-        for (let i = 0; i < 80; i++) {
+        for (let i = 0; i < 100; i++) {
             pieces.push({
-                x: Math.random() * canvas.width,
-                y: -Math.random() * canvas.height * 0.5,
+                x: Math.random() * canvas.width, y: -Math.random() * canvas.height * 0.5,
                 size: Math.random() * 8 + 4,
                 color: colors[Math.floor(Math.random() * colors.length)],
                 shape: ["heart", "circle", "rect"][Math.floor(Math.random() * 3)],
-                vy: Math.random() * 3 + 2, vx: (Math.random() - 0.5) * 2,
-                rot: Math.random() * 360, vr: (Math.random() - 0.5) * 6, opacity: 1,
+                vy: Math.random() * 3 + 1.5, vx: (Math.random() - 0.5) * 3,
+                rot: Math.random() * 360, vr: (Math.random() - 0.5) * 8, opacity: 1,
             });
         }
-
         let frame = 0;
-        function draw() {
+        (function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             let alive = 0;
             pieces.forEach(p => {
-                if (p.opacity <= 0) return;
-                alive++;
+                if (p.opacity <= 0) return; alive++;
                 p.y += p.vy; p.x += p.vx; p.rot += p.vr;
-                if (frame > 60) p.opacity -= 0.015;
+                if (frame > 80) p.opacity -= 0.012;
                 ctx.save();
                 ctx.translate(p.x, p.y);
-                ctx.rotate((p.rot * Math.PI) / 180);
+                ctx.rotate(p.rot * Math.PI / 180);
                 ctx.globalAlpha = p.opacity;
                 ctx.fillStyle = p.color;
                 if (p.shape === "heart") {
@@ -649,12 +758,13 @@
             });
             frame++;
             if (alive > 0) requestAnimationFrame(draw);
-        }
-        draw();
+        })();
         showToast("🎉", "Tüm anıları keşfettin! Tebrikler!");
     }
 
-    // ---------- Event Listeners ----------
+    // ==========================================
+    //  EVENT LISTENERS
+    // ==========================================
     function setupEventListeners() {
         sheetClose.addEventListener("click", hideSheet);
         sheetOverlay.addEventListener("click", hideSheet);

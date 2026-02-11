@@ -307,7 +307,7 @@ body {
 }
 
 /* ==========================================
-   DISTANCE BADGE
+   WARMTH / DISTANCE BADGE
    ========================================== */
 .distance-badge {
   position: fixed;
@@ -323,16 +323,128 @@ body {
   color: var(--text2);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   pointer-events: none;
   transition: opacity var(--fast);
   white-space: nowrap;
+}
+
+.warmth-dot {
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.warmth-dot.hot {
+  animation: hotPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes hotPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.3);
+  }
+}
+
+.warmth-label {
+  font-weight: 600;
+  font-size: 0.75rem;
+  transition: color 0.3s;
+}
+
+.warmth-dot.hot+.warmth-label {
+  color: #e74c3c;
+}
+
+.warmth-dot.warm+.warmth-label {
+  color: #e67e22;
+}
+
+.warmth-dot.mild+.warmth-label {
+  color: #f1c40f;
+}
+
+.warmth-dot.cold+.warmth-label {
+  color: #3498db;
+}
+
+.distance-sep {
+  color: var(--muted);
+  font-size: 0.7rem;
 }
 
 .distance-arrow {
   font-size: 1rem;
   display: inline-block;
   transition: transform 0.3s;
+}
+
+/* ==========================================
+   FLOATING EMOJIS (on discovery)
+   ========================================== */
+.floating-emoji {
+  position: fixed;
+  z-index: 1500;
+  font-size: 1.4rem;
+  pointer-events: none;
+  animation: floatUp 1.3s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(0.5);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-30px) translateX(var(--dx, 0px)) scale(1.2);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) translateX(var(--dx, 0px)) scale(0.6);
+  }
+}
+
+/* ==========================================
+   CHARACTER BOBBING (while moving)
+   ========================================== */
+.heart-marker.moving {
+  animation: charBob 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes charBob {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+/* ==========================================
+   SCORE POP
+   ========================================== */
+.hud-score.pop {
+  animation: scorePop 0.4s var(--bounce);
+}
+
+@keyframes scorePop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ==========================================
