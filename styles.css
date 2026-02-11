@@ -511,7 +511,7 @@ body {
    ========================================== */
 .surpriz-container {
   position: fixed;
-  bottom: 2rem;
+  bottom: 180px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1200;
@@ -832,6 +832,80 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ==========================================
+   D-PAD (On-Screen Controls)
+   ========================================== */
+.dpad {
+  position: fixed;
+  bottom: 24px;
+  left: 16px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.dpad-mid {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dpad-center {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.dpad-btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(61, 44, 46, 0.12);
+  font-size: 1rem;
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.dpad-btn:active,
+.dpad-btn.active {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(0.92);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* Desktop — gizle (klavye var) */
+@media (min-width: 1024px) and (hover: hover) {
+  .dpad {
+    display: none;
+  }
+}
+
+/* Zoom control'ü dpad'in üstüne çıkart */
+.leaflet-bottom.leaflet-right {
+  bottom: 160px !important;
 }
 
 /* ==========================================

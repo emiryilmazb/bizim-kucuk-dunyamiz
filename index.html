@@ -30,7 +30,8 @@
         <div class="splash-mission">
           <div class="mission-icon">🗺️</div>
           <p>İstanbul'daki <strong>gizli anılarımızı</strong> bul!<br>
-          💑 karakterini sürükle, ❓ noktalarını keşfet</p>
+          🎮 Kontroller ile veya haritaya dokunarak hareket et<br>
+          ❓ noktalarını keşfet!</p>
         </div>
         <button class="btn-play" id="btn-play">Oyuna Başla 💛</button>
       </div>
@@ -78,6 +79,17 @@
 
       <!-- Discovery Flash -->
       <div class="discovery-flash" id="discovery-flash"></div>
+
+      <!-- D-Pad Controls -->
+      <div class="dpad" id="dpad">
+        <button class="dpad-btn dpad-up" id="dpad-up" aria-label="Yukarı">▲</button>
+        <div class="dpad-mid">
+          <button class="dpad-btn dpad-left" id="dpad-left" aria-label="Sol">◀</button>
+          <div class="dpad-center">💑</div>
+          <button class="dpad-btn dpad-right" id="dpad-right" aria-label="Sağ">▶</button>
+        </div>
+        <button class="dpad-btn dpad-down" id="dpad-down" aria-label="Aşağı">▼</button>
+      </div>
     </div>
 
     <!-- ==========================================
@@ -121,7 +133,7 @@
     <!-- ==========================================
          ALL FOUND CELEBRATION
          ========================================== -->
-    <div class="confetti-canvas" id="confetti-canvas"></div>
+    <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
