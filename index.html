@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Bizim Küçük Dünyamız 🌍💛</title>
+    <meta name="description" content="Anılarımızı keşfettiğimiz küçük dünyamız. Harita üzerinde romantik bir yolculuk." />
+    <meta name="theme-color" content="#e8807f" />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+
+    <!-- App CSS -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Particle Background -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- ==========================================
+         HERO SECTION
+         ========================================== -->
+    <section class="hero" id="hero">
+      <div class="hero-content">
+        <div class="hero-emoji">🌍💛</div>
+        <h1>Bizim Küçük Dünyamız</h1>
+        <p class="hero-subtitle" id="hero-subtitle">
+          Senin için hazırladığım küçük bir sürpriz...
+        </p>
+        <button class="btn-cta" id="cta-btn">
+          Keşfetmeye Başla ✨
+        </button>
+      </div>
+      <div class="scroll-hint">
+        <span>↓</span>
+        Aşağı kaydır
+      </div>
+    </section>
+
+    <!-- ==========================================
+         MAP SECTION
+         ========================================== -->
+    <section class="map-section" id="map-section">
+      <div class="map-header">
+        <h2>Anılarımızın Haritası 📍</h2>
+        <p>Kalp ikonunu sürükleyerek anı noktalarını keşfet</p>
+      </div>
+
+      <div class="map-wrapper">
+        <div id="map"></div>
+        <div class="drag-hint" id="drag-hint">
+          <span class="hint-emoji">💑</span>
+          Karakteri sürükleyerek anıları keşfet!
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         ANI KARTI (Memory Card)
+         ========================================== -->
+    <div class="ani-karti-container">
+      <div class="ani-karti" id="ani-karti">
+        <div class="ani-karti-inner">
+          <div class="ani-karti-header">
+            <h3 id="ak-baslik">Anı Başlığı</h3>
+            <button class="ani-karti-close" id="ani-karti-close" aria-label="Kapat">✕</button>
+          </div>
+          <div class="ani-karti-date" id="ak-tarih">📅 Tarih</div>
+          <img class="ani-karti-foto" id="ak-foto" alt="Anı fotoğrafı" style="display: none;" />
+          <div class="ani-karti-placeholder" id="ak-placeholder">💕</div>
+          <p class="ani-karti-metin" id="ak-metin">Anı metni burada görünecek...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         SURPRISE BUTTON
+         ========================================== -->
+    <div class="surpriz-btn-container" id="surpriz-btn-container">
+      <button class="btn-surpriz" id="surpriz-btn">Sürprizi Aç 💌</button>
+    </div>
+
+    <!-- ==========================================
+         SURPRISE MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-emoji">💌</div>
+        <h2>Sana Bir Şey Söylemek İstiyorum</h2>
+        <div class="modal-mesaj" id="modal-mesaj"></div>
+        <div class="modal-buttons">
+          <button class="btn-modal secondary" id="modal-tekrar">Tekrar Oku 🔄</button>
+          <button class="btn-modal primary" id="modal-kapat">Kapat 💛</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""></script>
+
+    <!-- App Scripts -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
