@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Bizim Küçük Dünyamız 🌍💛</title>
-    <meta name="description" content="Anılarımızı keşfettiğimiz küçük dünyamız. Harita üzerinde romantik bir yolculuk." />
+    <meta name="description" content="Anılarımızı keşfettiğimiz küçük dünyamız. İstanbul haritasında romantik bir yolculuk." />
     <meta name="theme-color" content="#e8807f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -44,15 +46,27 @@
          ========================================== -->
     <section class="map-section" id="map-section">
       <div class="map-header">
-        <h2>Anılarımızın Haritası 📍</h2>
-        <p>Kalp ikonunu sürükleyerek anı noktalarını keşfet</p>
+        <h2>İstanbul'daki Anılarımız 📍</h2>
+        <p>💑 karakterini sürükle, gizli anıları keşfet!</p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text">0 / 6 anı keşfedildi</div>
       </div>
 
       <div class="map-wrapper">
         <div id="map"></div>
+
+        <!-- Discovery Flash -->
+        <div class="discovery-flash" id="discovery-flash"></div>
+
         <div class="drag-hint" id="drag-hint">
           <span class="hint-emoji">💑</span>
-          Karakteri sürükleyerek anıları keşfet!
+          Karakteri sürükle → anıları bul!
         </div>
       </div>
     </section>

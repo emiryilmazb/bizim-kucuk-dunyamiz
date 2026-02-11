@@ -9,7 +9,7 @@ const config = {
 };
 
 // ==========================================
-// 📍 ANI NOKTALARI
+// 📍 ANI NOKTALARI (Tümü İstanbul)
 // Her anı için: baslik, tarih, metin, lat, lng, foto
 // Foto opsiyoneldir — yoksa null yazın
 // ==========================================
@@ -36,17 +36,17 @@ const anilar = [
     },
     {
         id: 3,
-        baslik: "İzmir Kordon'da Akşamüstü 🎡",
+        baslik: "Balat'ta Renkli Sokaklar 🎨",
         tarih: "15 Haziran 2023",
         metin:
-            "İzmir'e ilk birlikte gittiğimiz gün. Kordon'da dondurma yedik, martılara ekmek attık. Gülüşlerin deniz sesine karışıyordu, dünyanın en güzel melodisiydi.",
-        lat: 38.4322,
-        lng: 27.1384,
+            "Balat'ın renkli sokaklarında saatlerce kayboldum seninle. Her köşe başı yeni bir sürprizdi. Kahvemizi yudumlarken dünya sadece ikimize aitti.",
+        lat: 41.0295,
+        lng: 28.9487,
         foto: null,
     },
     {
         id: 4,
-        baslik: "Kadıköy Sokaklarında Kaybolmak 🎨",
+        baslik: "Kadıköy Sokaklarında Kaybolmak 🎭",
         tarih: "20 Ağustos 2023",
         metin:
             "Kadıköy'ün renkli sokaklarında saatlerce yürüdük. Sokak müzisyenlerini dinledik, vintage dükkanları keşfettik. Seninle kaybolmak bile bir macera.",
@@ -70,8 +70,8 @@ const anilar = [
         tarih: null,
         metin:
             "Burası bizim geleceğimiz. Birlikte keşfedeceğimiz yerler, yaşayacağımız anılar ve yazacağımız hikayeler... Hepsi burada başlıyor.",
-        lat: 38.4192,
-        lng: 27.1287,
+        lat: 41.0586,
+        lng: 29.0337,
         foto: null,
         surpriz: true,
     },

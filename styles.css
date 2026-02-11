@@ -1,6 +1,6 @@
 /* ==========================================
    Bizim Küçük Dünyamız 🌍💛
-   Romantik Pastel Tema
+   Romantik Pastel Tema — Oyun Modu
    ========================================== */
 
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap");
@@ -54,6 +54,7 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* ---------- Particles Canvas ---------- */
@@ -74,12 +75,13 @@ body {
 .hero {
   position: relative;
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2rem;
+  padding: 2rem 1.5rem;
   z-index: 1;
   overflow: hidden;
 }
@@ -88,21 +90,15 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-      ellipse at 30% 20%,
+  background: radial-gradient(ellipse at 30% 20%,
       var(--pastel-pink) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 70% 80%,
+      transparent 50%),
+    radial-gradient(ellipse at 70% 80%,
       var(--pastel-lavender) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
+      transparent 50%),
+    radial-gradient(ellipse at 50% 50%,
       var(--pastel-peach) 0%,
-      transparent 60%
-    );
+      transparent 60%);
   z-index: -1;
   animation: bgShift 12s ease-in-out infinite alternate;
 }
@@ -112,6 +108,7 @@ body {
     opacity: 0.7;
     transform: scale(1);
   }
+
   100% {
     opacity: 1;
     transform: scale(1.05);
@@ -124,16 +121,18 @@ body {
 }
 
 .hero-emoji {
-  font-size: 4rem;
+  font-size: 3.5rem;
   margin-bottom: 1rem;
   animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-12px);
   }
@@ -141,7 +140,7 @@ body {
 
 .hero h1 {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-size: clamp(1.8rem, 6vw, 3.5rem);
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 1rem;
@@ -149,7 +148,7 @@ body {
 }
 
 .hero-subtitle {
-  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-size: clamp(0.95rem, 3vw, 1.25rem);
   color: var(--text-secondary);
   margin-bottom: 2.5rem;
   font-weight: 300;
@@ -177,6 +176,7 @@ body {
   transition: var(--transition);
   box-shadow: 0 4px 20px var(--accent-glow);
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-cta:hover {
@@ -207,10 +207,12 @@ body {
 }
 
 @keyframes bounce {
+
   0%,
   100% {
     transform: translateX(-50%) translateY(0);
   }
+
   50% {
     transform: translateX(-50%) translateY(-8px);
   }
@@ -227,36 +229,94 @@ body {
 
 .map-header {
   text-align: center;
-  padding: 2.5rem 1.5rem 1rem;
+  padding: 2rem 1.5rem 0.75rem;
   background: var(--bg-secondary);
 }
 
 .map-header h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .map-header p {
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
   max-width: 500px;
   margin: 0 auto;
 }
 
+/* ---------- Progress Bar ---------- */
+.progress-container {
+  background: var(--bg-secondary);
+  padding: 0.75rem 1.5rem 1rem;
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  max-width: 400px;
+  height: 8px;
+  background: var(--gold-light);
+  border-radius: 50px;
+  margin: 0 auto 0.4rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  border-radius: 50px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ---------- Map Wrapper ---------- */
 .map-wrapper {
   position: relative;
   width: 100%;
-  height: 65vh;
-  min-height: 400px;
-  max-height: 700px;
+  height: calc(100vh - 160px);
+  height: calc(100svh - 160px);
+  min-height: 350px;
 }
 
 #map {
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+
+/* ---------- Discovery Flash ---------- */
+.discovery-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  background: radial-gradient(circle at center, var(--accent-glow), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.discovery-flash.show {
+  opacity: 1;
+  animation: flashPulse 0.6s ease-out forwards;
+}
+
+@keyframes flashPulse {
+  0% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 /* Leaflet popup overrides */
@@ -269,7 +329,7 @@ body {
 
 .leaflet-popup-content {
   margin: 0 !important;
-  min-width: 200px;
+  min-width: 180px;
 }
 
 .leaflet-popup-tip {
@@ -277,22 +337,22 @@ body {
 }
 
 .popup-content {
-  padding: 1rem 1.2rem;
+  padding: 0.8rem 1rem;
 }
 
 .popup-content h3 {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-primary);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .popup-content .popup-date {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
 }
 
-/* ---------- Draggable Character Info ---------- */
+/* ---------- Drag Hint ---------- */
 .drag-hint {
   position: absolute;
   bottom: 1rem;
@@ -300,10 +360,10 @@ body {
   transform: translateX(-50%);
   z-index: 1000;
   background: var(--bg-card);
-  padding: 0.6rem 1.2rem;
+  padding: 0.5rem 1rem;
   border-radius: 50px;
   box-shadow: var(--shadow-md);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -317,18 +377,82 @@ body {
   font-size: 1.1rem;
 }
 
-/* Glow effect on marker proximity */
-.marker-glow {
-  animation: glowPulse 1s ease-in-out infinite;
+/* ==========================================
+   CUSTOM LEAFLET MARKER STYLES
+   ========================================== */
+.heart-marker {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
+  transition: transform 0.2s, filter 0.3s;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: 1000 !important;
 }
 
-@keyframes glowPulse {
+.heart-marker:active,
+.heart-marker.dragging {
+  cursor: grabbing;
+  transform: scale(1.25);
+  filter: drop-shadow(0 6px 12px rgba(232, 128, 127, 0.5));
+}
+
+.memory-marker {
+  transition: transform 0.3s, filter 0.3s;
+}
+
+.memory-marker .marker-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Keşfedilmemiş — gizli stil */
+.memory-marker.undiscovered .marker-inner {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  animation: mysteryPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes mysteryPulse {
+
   0%,
   100% {
-    filter: drop-shadow(0 0 6px var(--accent-glow));
+    transform: scale(1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   }
+
   50% {
-    filter: drop-shadow(0 0 18px var(--accent));
+    transform: scale(1.08);
+    box-shadow: 0 2px 18px rgba(212, 165, 116, 0.4);
+  }
+}
+
+/* Keşfedilmiş — açılmış stil */
+.memory-marker.discovered .marker-inner {
+  background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-lavender));
+  box-shadow: 0 2px 15px var(--accent-glow);
+  animation: discoveredPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes discoveredPop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.3);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -344,7 +468,7 @@ body {
   display: flex;
   justify-content: center;
   pointer-events: none;
-  padding: 0 1rem 1rem;
+  padding: 0 0.75rem;
 }
 
 .ani-karti {
@@ -357,6 +481,8 @@ body {
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   pointer-events: auto;
   overflow: hidden;
+  max-height: 45vh;
+  overflow-y: auto;
 }
 
 .ani-karti.show {
@@ -364,43 +490,49 @@ body {
 }
 
 .ani-karti-inner {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .ani-karti-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
 }
 
 .ani-karti h3 {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: var(--text-primary);
   flex: 1;
+  line-height: 1.3;
 }
 
 .ani-karti-close {
-  background: none;
+  background: var(--bg-secondary);
   border: none;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0.2rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 50%;
   line-height: 1;
   transition: var(--transition);
+  flex-shrink: 0;
 }
 
-.ani-karti-close:hover {
+.ani-karti-close:hover,
+.ani-karti-close:active {
   color: var(--accent);
+  background: var(--pastel-pink);
 }
 
 .ani-karti-date {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--gold);
   font-weight: 500;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -408,28 +540,28 @@ body {
 
 .ani-karti-foto {
   width: 100%;
-  height: 180px;
+  height: 150px;
   object-fit: cover;
   border-radius: var(--radius-sm);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .ani-karti-placeholder {
   width: 100%;
-  height: 120px;
+  height: 80px;
   background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-lavender));
   border-radius: var(--radius-sm);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  font-size: 2rem;
 }
 
 .ani-karti-metin {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 /* ---------- Surprise Button ---------- */
@@ -448,29 +580,33 @@ body {
 }
 
 .btn-surpriz {
-  padding: 1rem 2.5rem;
+  padding: 1rem 2.2rem;
   background: linear-gradient(135deg, var(--gold), var(--accent));
   color: #fff;
   border: none;
   border-radius: 50px;
   font-family: var(--font-body);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 500;
   cursor: pointer;
   box-shadow: 0 4px 25px rgba(212, 165, 116, 0.4);
   transition: var(--transition);
   animation: pulseGlow 2s infinite;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.btn-surpriz:hover {
+.btn-surpriz:hover,
+.btn-surpriz:active {
   transform: translateY(-3px) scale(1.03);
 }
 
 @keyframes pulseGlow {
+
   0%,
   100% {
     box-shadow: 0 4px 25px rgba(212, 165, 116, 0.4);
   }
+
   50% {
     box-shadow: 0 4px 40px rgba(232, 128, 127, 0.6);
   }
@@ -489,7 +625,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s, visibility 0.4s;
@@ -503,11 +639,12 @@ body {
 .modal {
   background: var(--bg-card);
   border-radius: var(--radius-xl);
-  max-width: 520px;
+  max-width: 480px;
   width: 100%;
   max-height: 85vh;
+  max-height: 85svh;
   overflow-y: auto;
-  padding: 2.5rem 2rem;
+  padding: 2rem 1.5rem;
   text-align: center;
   transform: scale(0.9) translateY(20px);
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -519,24 +656,24 @@ body {
 }
 
 .modal-emoji {
-  font-size: 3.5rem;
-  margin-bottom: 1rem;
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
   animation: float 3s ease-in-out infinite;
 }
 
 .modal h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 4vw, 1.8rem);
+  font-size: clamp(1.2rem, 4vw, 1.6rem);
   color: var(--text-primary);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .modal-mesaj {
-  font-size: 1rem;
+  font-size: 0.92rem;
   color: var(--text-secondary);
   line-height: 1.8;
   text-align: left;
-  min-height: 120px;
+  min-height: 100px;
   white-space: pre-line;
 }
 
@@ -551,27 +688,35 @@ body {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
 }
 
 .modal-buttons {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .btn-modal {
-  padding: 0.8rem 1.8rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 50px;
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
   border: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-modal.primary {
@@ -580,7 +725,8 @@ body {
   box-shadow: 0 4px 15px var(--accent-glow);
 }
 
-.btn-modal.primary:hover {
+.btn-modal.primary:hover,
+.btn-modal.primary:active {
   transform: translateY(-2px);
   box-shadow: 0 6px 25px var(--accent-glow);
 }
@@ -591,7 +737,8 @@ body {
   border: 1px solid var(--gold-light);
 }
 
-.btn-modal.secondary:hover {
+.btn-modal.secondary:hover,
+.btn-modal.secondary:active {
   background: var(--gold-light);
   color: var(--text-primary);
 }
@@ -604,98 +751,91 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 /* ==========================================
-   CUSTOM LEAFLET MARKER STYLES
-   ========================================== */
-.heart-marker {
-  font-size: 2rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: transform 0.2s, filter 0.3s;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.heart-marker:active {
-  cursor: grabbing;
-}
-
-.memory-marker {
-  font-size: 1.6rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-  transition: transform 0.3s;
-}
-
-.memory-marker:hover {
-  transform: scale(1.2);
-}
-
-.memory-marker.visited {
-  opacity: 0.7;
-}
-
-.memory-marker.active {
-  animation: glowPulse 1s ease-in-out infinite;
-  transform: scale(1.3);
-}
-
-/* ==========================================
-   RESPONSIVE
+   RESPONSIVE — MOBİL ÖNCELİKLİ
    ========================================== */
 @media (max-width: 768px) {
   .hero {
-    min-height: 100svh;
-    padding: 1.5rem;
+    padding: 1.5rem 1rem;
   }
 
   .hero-emoji {
-    font-size: 3rem;
+    font-size: 2.8rem;
+  }
+
+  .map-header {
+    padding: 1.5rem 1rem 0.5rem;
+  }
+
+  .progress-container {
+    padding: 0.5rem 1rem 0.75rem;
   }
 
   .map-wrapper {
-    height: 55vh;
-    min-height: 350px;
+    height: calc(100vh - 140px);
+    height: calc(100svh - 140px);
+    min-height: 300px;
   }
 
   .ani-karti {
     border-radius: var(--radius-md) var(--radius-md) 0 0;
+    max-height: 40vh;
   }
 
   .ani-karti-inner {
-    padding: 1.2rem;
+    padding: 1rem;
+  }
+
+  .ani-karti h3 {
+    font-size: 1rem;
   }
 
   .ani-karti-placeholder {
-    height: 80px;
-    font-size: 2rem;
+    height: 60px;
+    font-size: 1.6rem;
+  }
+
+  .ani-karti-metin {
+    font-size: 0.85rem;
   }
 
   .modal {
-    padding: 2rem 1.5rem;
+    padding: 1.5rem 1.25rem;
     border-radius: var(--radius-lg);
+    max-height: 90vh;
+    max-height: 90svh;
+  }
+
+  .modal-emoji {
+    font-size: 2.5rem;
+  }
+
+  .modal-mesaj {
+    font-size: 0.88rem;
   }
 
   .drag-hint {
-    font-size: 0.78rem;
-    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.85rem;
+    bottom: 0.75rem;
+  }
+
+  .heart-marker {
+    font-size: 2rem;
   }
 }
 
 @media (max-width: 380px) {
   .btn-cta {
-    padding: 0.85rem 2rem;
-    font-size: 1rem;
+    padding: 0.85rem 1.8rem;
+    font-size: 0.95rem;
   }
 
   .modal-buttons {
@@ -705,14 +845,43 @@ body {
   .btn-modal {
     width: 100%;
   }
+
+  .map-wrapper {
+    height: calc(100vh - 120px);
+    height: calc(100svh - 120px);
+  }
+
+  .ani-karti {
+    max-height: 38vh;
+  }
 }
 
-/* ---------- Leaflet fix for touch ---------- */
+/* Tall phones / landscape fix */
+@media (max-height: 600px) {
+  .hero {
+    min-height: auto;
+    padding: 2rem 1rem;
+  }
+
+  .map-wrapper {
+    height: 70vh;
+    height: 70svh;
+  }
+}
+
+/* ---------- Leaflet Touch Fixes ---------- */
 .leaflet-container {
   touch-action: pan-x pan-y;
 }
 
-/* Disable double tap zoom on markers */
 .leaflet-marker-icon {
   touch-action: none;
+}
+
+/* Hide Leaflet zoom on very small screens */
+@media (max-width: 380px) {
+  .leaflet-control-zoom {
+    transform: scale(0.85);
+    transform-origin: bottom right;
+  }
 }

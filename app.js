@@ -1,6 +1,6 @@
 // ==========================================
 // Bizim Küçük Dünyamız 🌍💛
-// Ana Uygulama Mantığı
+// Ana Uygulama Mantığı — Oyun Modu
 // ==========================================
 
 (function () {
@@ -11,13 +11,23 @@
     let characterMarker;
     let memoryMarkers = [];
     let triggeredMemories = new Set();
+    let discoveredCount = 0;
     let surpriseShown = false;
-    const PROXIMITY_THRESHOLD = 150; // metre
+    const PROXIMITY_THRESHOLD = 500; // metre — haritada daha rahat tetikleme
+
+    // ---------- İstanbul Sınırları ----------
+    const ISTANBUL_BOUNDS = L.latLngBounds(
+        L.latLng(40.88, 28.6),  // güneybatı
+        L.latLng(41.22, 29.35)  // kuzeydoğu
+    );
+    const ISTANBUL_CENTER = [41.035, 29.01];
+    const MIN_ZOOM = 11;
+    const MAX_ZOOM = 18;
+    const DEFAULT_ZOOM = 12;
 
     // ---------- DOM Elements ----------
-    const heroSection = document.getElementById("hero");
-    const mapSection = document.getElementById("map-section");
     const ctaBtn = document.getElementById("cta-btn");
+    const mapSection = document.getElementById("map-section");
     const aniKarti = document.getElementById("ani-karti");
     const aniKartiClose = document.getElementById("ani-karti-close");
     const surprizContainer = document.getElementById("surpriz-btn-container");
@@ -26,6 +36,8 @@
     const modalMesaj = document.getElementById("modal-mesaj");
     const modalKapat = document.getElementById("modal-kapat");
     const modalTekrar = document.getElementById("modal-tekrar");
+    const progressBar = document.getElementById("progress-fill");
+    const progressText = document.getElementById("progress-text");
 
     // ---------- Init ----------
     function init() {
@@ -33,6 +45,7 @@
         setupParticles();
         setupMap();
         setupEventListeners();
+        updateProgress();
     }
 
     // ---------- Hero Setup ----------
@@ -54,7 +67,7 @@
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
         let particles = [];
-        const PARTICLE_COUNT = 30;
+        const PARTICLE_COUNT = 25;
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -74,7 +87,7 @@
                 this.speedY = -(Math.random() * 0.5 + 0.1);
                 this.speedX = (Math.random() - 0.5) * 0.3;
                 this.opacity = Math.random() * 0.5 + 0.1;
-                this.hue = Math.random() > 0.5 ? 0 : 30; // pink or peach
+                this.hue = Math.random() > 0.5 ? 0 : 30;
             }
             update() {
                 this.y += this.speedY;
@@ -90,41 +103,12 @@
                 ctx.globalAlpha = this.opacity;
                 ctx.fillStyle = `hsl(${this.hue}, 80%, 80%)`;
                 ctx.beginPath();
-                // Draw tiny heart
                 const s = this.size;
                 ctx.moveTo(this.x, this.y + s * 0.3);
-                ctx.bezierCurveTo(
-                    this.x,
-                    this.y,
-                    this.x - s,
-                    this.y,
-                    this.x - s,
-                    this.y + s * 0.3
-                );
-                ctx.bezierCurveTo(
-                    this.x - s,
-                    this.y + s * 0.8,
-                    this.x,
-                    this.y + s * 1.2,
-                    this.x,
-                    this.y + s * 1.5
-                );
-                ctx.bezierCurveTo(
-                    this.x,
-                    this.y + s * 1.2,
-                    this.x + s,
-                    this.y + s * 0.8,
-                    this.x + s,
-                    this.y + s * 0.3
-                );
-                ctx.bezierCurveTo(
-                    this.x + s,
-                    this.y,
-                    this.x,
-                    this.y,
-                    this.x,
-                    this.y + s * 0.3
-                );
+                ctx.bezierCurveTo(this.x, this.y, this.x - s, this.y, this.x - s, this.y + s * 0.3);
+                ctx.bezierCurveTo(this.x - s, this.y + s * 0.8, this.x, this.y + s * 1.2, this.x, this.y + s * 1.5);
+                ctx.bezierCurveTo(this.x, this.y + s * 1.2, this.x + s, this.y + s * 0.8, this.x + s, this.y + s * 0.3);
+                ctx.bezierCurveTo(this.x + s, this.y, this.x, this.y, this.x, this.y + s * 0.3);
                 ctx.fill();
                 ctx.restore();
             }
@@ -147,64 +131,64 @@
 
     // ---------- Map Setup ----------
     function setupMap() {
-        // Calculate center from memory points
-        const avgLat =
-            anilar.reduce((sum, a) => sum + a.lat, 0) / anilar.length;
-        const avgLng =
-            anilar.reduce((sum, a) => sum + a.lng, 0) / anilar.length;
-
         map = L.map("map", {
-            center: [avgLat, avgLng],
-            zoom: 7,
-            zoomControl: true,
-            attributionControl: true,
+            center: ISTANBUL_CENTER,
+            zoom: DEFAULT_ZOOM,
+            minZoom: MIN_ZOOM,
+            maxZoom: MAX_ZOOM,
+            maxBounds: ISTANBUL_BOUNDS,
+            maxBoundsViscosity: 1.0,
+            zoomControl: false,
+            attributionControl: false,
         });
 
-        // Warm romantic tile style
+        // Zoom kontrolünü sağ alta koy (mobilde sol üst CTA ile çakışmasın)
+        L.control.zoom({ position: "bottomright" }).addTo(map);
+        L.control.attribution({ position: "bottomright", prefix: false }).addTo(map);
+
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "© OpenStreetMap contributors",
-            maxZoom: 18,
+            attribution: "© OpenStreetMap",
+            maxZoom: MAX_ZOOM,
         }).addTo(map);
 
-        // Add memory markers
+        // Haritayı İstanbul'a sığdır
+        map.fitBounds(
+            L.latLngBounds(anilar.map((a) => [a.lat, a.lng])).pad(0.15)
+        );
+
         addMemoryMarkers();
 
-        // Add draggable character
-        addCharacterMarker(avgLat, avgLng);
-
-        // Fit bounds to show all points
-        const bounds = L.latLngBounds(anilar.map((a) => [a.lat, a.lng]));
-        map.fitBounds(bounds.pad(0.3));
+        // Karakter haritanın merkezinde başlar
+        const startLat = (anilar[0].lat + anilar[1].lat) / 2;
+        const startLng = (anilar[0].lng + anilar[1].lng) / 2;
+        addCharacterMarker(startLat, startLng);
     }
 
     // ---------- Memory Markers ----------
     function addMemoryMarkers() {
         anilar.forEach((ani) => {
             const icon = L.divIcon({
-                className: "memory-marker",
-                html: ani.surpriz ? "✨" : "📍",
-                iconSize: [30, 30],
-                iconAnchor: [15, 15],
+                className: "memory-marker undiscovered",
+                html: ani.surpriz ? '<span class="marker-inner">❓</span>' : '<span class="marker-inner">❓</span>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
             });
 
             const marker = L.marker([ani.lat, ani.lng], {
                 icon: icon,
-                interactive: true,
+                interactive: false,  // Tıklama devre dışı — sadece yaklaşınca açılır
             }).addTo(map);
 
-            // Popup content
-            let popupHtml = `<div class="popup-content">
+            // Popup — sadece proximity ile açılacak
+            const popupHtml = `<div class="popup-content">
         <h3>${ani.baslik}</h3>
         ${ani.tarih ? `<div class="popup-date">📅 ${ani.tarih}</div>` : ""}
       </div>`;
 
             marker.bindPopup(popupHtml, {
                 closeButton: true,
-                maxWidth: 250,
-            });
-
-            marker.on("click", () => {
-                showAniKarti(ani);
+                maxWidth: 220,
+                autoPan: false,
             });
 
             marker._aniData = ani;
@@ -217,30 +201,45 @@
         const charIcon = L.divIcon({
             className: "heart-marker",
             html: "💑",
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
+            iconSize: [44, 44],
+            iconAnchor: [22, 22],
         });
 
         characterMarker = L.marker([lat, lng], {
             icon: charIcon,
             draggable: true,
             autoPan: true,
-            autoPanPadding: [50, 50],
+            autoPanPadding: [60, 60],
+            autoPanSpeed: 10,
         }).addTo(map);
 
-        // Touch-friendly drag improvement
         characterMarker.on("dragstart", () => {
             map.dragging.disable();
-            characterMarker.getElement().style.cursor = "grabbing";
+            map.closePopup();
+            const el = characterMarker.getElement();
+            if (el) {
+                el.classList.add("dragging");
+            }
         });
 
         characterMarker.on("drag", (e) => {
-            checkProximity(e.target.getLatLng());
+            // Karakteri İstanbul sınırları içinde tut
+            let latlng = e.target.getLatLng();
+            if (!ISTANBUL_BOUNDS.contains(latlng)) {
+                const clampedLat = Math.max(ISTANBUL_BOUNDS.getSouth(), Math.min(ISTANBUL_BOUNDS.getNorth(), latlng.lat));
+                const clampedLng = Math.max(ISTANBUL_BOUNDS.getWest(), Math.min(ISTANBUL_BOUNDS.getEast(), latlng.lng));
+                e.target.setLatLng([clampedLat, clampedLng]);
+                latlng = e.target.getLatLng();
+            }
+            checkProximity(latlng);
         });
 
         characterMarker.on("dragend", (e) => {
             map.dragging.enable();
-            characterMarker.getElement().style.cursor = "grab";
+            const el = characterMarker.getElement();
+            if (el) {
+                el.classList.remove("dragging");
+            }
             checkProximity(e.target.getLatLng());
         });
     }
@@ -253,25 +252,51 @@
 
             if (distance < PROXIMITY_THRESHOLD && !triggeredMemories.has(ani.id)) {
                 triggeredMemories.add(ani.id);
+                discoveredCount++;
 
-                // Animate marker
-                const el = marker.getElement();
-                if (el) {
-                    el.classList.add("active");
-                    setTimeout(() => el.classList.remove("active"), 3000);
-                }
+                // Marker ikonunu güncelle — keşfedildi!
+                const revealEmoji = ani.surpriz ? "✨" : ["📍", "🌅", "🎨", "🎭", "🏰", "💫"][ani.id % 6];
+                marker.setIcon(
+                    L.divIcon({
+                        className: "memory-marker discovered",
+                        html: `<span class="marker-inner">${revealEmoji}</span>`,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 20],
+                    })
+                );
 
-                // Open popup
+                // Popup aç
                 marker.openPopup();
 
-                // Show ani karti
+                // Kartı veya sürprizi göster
                 if (ani.surpriz) {
                     showSurpriseButton();
                 } else {
                     showAniKarti(ani);
                 }
+
+                updateProgress();
+
+                // Keşif efekti
+                showDiscoveryFlash();
             }
         });
+    }
+
+    // ---------- Discovery Flash ----------
+    function showDiscoveryFlash() {
+        const flash = document.getElementById("discovery-flash");
+        if (!flash) return;
+        flash.classList.add("show");
+        setTimeout(() => flash.classList.remove("show"), 600);
+    }
+
+    // ---------- Progress ----------
+    function updateProgress() {
+        const total = anilar.length;
+        const pct = Math.round((discoveredCount / total) * 100);
+        if (progressBar) progressBar.style.width = pct + "%";
+        if (progressText) progressText.textContent = `${discoveredCount} / ${total} anı keşfedildi`;
     }
 
     // ---------- Anı Kartı ----------
@@ -304,7 +329,6 @@
         }
 
         metinEl.textContent = ani.metin;
-
         aniKarti.classList.add("show");
     }
 
@@ -338,20 +362,15 @@
     function typewriterEffect(text) {
         modalMesaj.innerHTML = '<span class="cursor"></span>';
         let i = 0;
-
         if (typewriterInterval) clearInterval(typewriterInterval);
 
         typewriterInterval = setInterval(() => {
             if (i < text.length) {
-                // Insert text before cursor
                 const cursor = modalMesaj.querySelector(".cursor");
-                if (cursor) {
-                    cursor.insertAdjacentText("beforebegin", text[i]);
-                }
+                if (cursor) cursor.insertAdjacentText("beforebegin", text[i]);
                 i++;
             } else {
                 clearInterval(typewriterInterval);
-                // Remove cursor after a delay
                 setTimeout(() => {
                     const cursor = modalMesaj.querySelector(".cursor");
                     if (cursor) cursor.remove();
@@ -367,26 +386,25 @@
     // ---------- Event Listeners ----------
     function setupEventListeners() {
         ctaBtn.addEventListener("click", scrollToMap);
-
         aniKartiClose.addEventListener("click", hideAniKarti);
-
         surprizBtn.addEventListener("click", openSurpriseModal);
-
         modalKapat.addEventListener("click", closeSurpriseModal);
-
         modalTekrar.addEventListener("click", replayTypewriter);
 
-        // Close modal on overlay click
         modalOverlay.addEventListener("click", (e) => {
             if (e.target === modalOverlay) closeSurpriseModal();
         });
 
-        // Escape key
         document.addEventListener("keydown", (e) => {
             if (e.key === "Escape") {
                 closeSurpriseModal();
                 hideAniKarti();
             }
+        });
+
+        // Harita dışına tıklayınca anı kartını kapat
+        map.on("click", () => {
+            hideAniKarti();
         });
     }
 
