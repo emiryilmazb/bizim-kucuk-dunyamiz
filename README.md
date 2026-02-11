@@ -56,7 +56,7 @@ const finalMesaj = `Romantik mesajınız buraya...`;
 
 ## 🚀 Canlı Demo
 
-👉 [GitHub Pages'de Görüntüle](https://USERNAME.github.io/bizim-kucuk-dunyamiz/)
+👉 [GitHub Pages'de Görüntüle](https://emiryilmazb.github.io/bizim-kucuk-dunyamiz/)
 
 ## 📦 Teknolojiler
 
