@@ -2,9 +2,9 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Bizim Küçük Dünyamız 🌍💛</title>
-    <meta name="description" content="Anılarımızı keşfettiğimiz küçük dünyamız. İstanbul haritasında romantik bir yolculuk." />
+    <meta name="description" content="Sevgililer günü sürprizi — anılarımızı keşfet!" />
     <meta name="theme-color" content="#e8807f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -18,82 +18,89 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Particle Background -->
-    <canvas id="particles-canvas"></canvas>
+    <!-- ==========================================
+         INTRO / SPLASH SCREEN
+         ========================================== -->
+    <div class="splash" id="splash">
+      <canvas id="particles-canvas"></canvas>
+      <div class="splash-content">
+        <div class="splash-hearts">💕</div>
+        <h1 class="splash-title">Bizim Küçük Dünyamız</h1>
+        <p class="splash-sub" id="splash-sub">Senin için bir sürpriz hazırladım...</p>
+        <div class="splash-mission">
+          <div class="mission-icon">🗺️</div>
+          <p>İstanbul'daki <strong>gizli anılarımızı</strong> bul!<br>
+          💑 karakterini sürükle, ❓ noktalarını keşfet</p>
+        </div>
+        <button class="btn-play" id="btn-play">Oyuna Başla 💛</button>
+      </div>
+    </div>
 
     <!-- ==========================================
-         HERO SECTION
+         GAME SCREEN
          ========================================== -->
-    <section class="hero" id="hero">
-      <div class="hero-content">
-        <div class="hero-emoji">🌍💛</div>
-        <h1>Bizim Küçük Dünyamız</h1>
-        <p class="hero-subtitle" id="hero-subtitle">
-          Senin için hazırladığım küçük bir sürpriz...
-        </p>
-        <button class="btn-cta" id="cta-btn">
-          Keşfetmeye Başla ✨
-        </button>
-      </div>
-      <div class="scroll-hint">
-        <span>↓</span>
-        Aşağı kaydır
-      </div>
-    </section>
+    <div class="game" id="game">
+      <!-- Map fills entire screen -->
+      <div id="map"></div>
 
-    <!-- ==========================================
-         MAP SECTION
-         ========================================== -->
-    <section class="map-section" id="map-section">
-      <div class="map-header">
-        <h2>İstanbul'daki Anılarımız 📍</h2>
-        <p>💑 karakterini sürükle, gizli anıları keşfet!</p>
+      <!-- HUD (Heads-Up Display) -->
+      <div class="hud">
+        <div class="hud-left">
+          <div class="hud-score" id="hud-score">
+            <span class="hud-heart">💕</span>
+            <span id="score-text">0 / 6</span>
+          </div>
+        </div>
+        <div class="hud-center">
+          <div class="hud-title">Bizim Dünyamız</div>
+        </div>
+        <div class="hud-right">
+          <button class="hud-btn" id="btn-compass" title="En yakın anıya git">🧭</button>
+        </div>
       </div>
 
       <!-- Progress Bar -->
-      <div class="progress-container">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progress-fill"></div>
-        </div>
-        <div class="progress-text" id="progress-text">0 / 6 anı keşfedildi</div>
+      <div class="game-progress">
+        <div class="game-progress-fill" id="progress-fill"></div>
       </div>
 
-      <div class="map-wrapper">
-        <div id="map"></div>
-
-        <!-- Discovery Flash -->
-        <div class="discovery-flash" id="discovery-flash"></div>
-
-        <div class="drag-hint" id="drag-hint">
-          <span class="hint-emoji">💑</span>
-          Karakteri sürükle → anıları bul!
-        </div>
+      <!-- Distance Indicator -->
+      <div class="distance-badge" id="distance-badge">
+        <span class="distance-arrow" id="distance-arrow">↑</span>
+        <span class="distance-text" id="distance-text">En yakın: --</span>
       </div>
-    </section>
+
+      <!-- Discovery Toast -->
+      <div class="toast" id="toast">
+        <span class="toast-emoji">💕</span>
+        <span class="toast-text" id="toast-text">Yeni anı keşfedildi!</span>
+      </div>
+
+      <!-- Discovery Flash -->
+      <div class="discovery-flash" id="discovery-flash"></div>
+    </div>
 
     <!-- ==========================================
-         ANI KARTI (Memory Card)
+         ANI KARTI (Memory Card) — Bottom Sheet
          ========================================== -->
-    <div class="ani-karti-container">
-      <div class="ani-karti" id="ani-karti">
-        <div class="ani-karti-inner">
-          <div class="ani-karti-header">
-            <h3 id="ak-baslik">Anı Başlığı</h3>
-            <button class="ani-karti-close" id="ani-karti-close" aria-label="Kapat">✕</button>
-          </div>
-          <div class="ani-karti-date" id="ak-tarih">📅 Tarih</div>
-          <img class="ani-karti-foto" id="ak-foto" alt="Anı fotoğrafı" style="display: none;" />
-          <div class="ani-karti-placeholder" id="ak-placeholder">💕</div>
-          <p class="ani-karti-metin" id="ak-metin">Anı metni burada görünecek...</p>
-        </div>
+    <div class="sheet-overlay" id="sheet-overlay"></div>
+    <div class="sheet" id="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-body">
+        <h3 class="sheet-title" id="ak-baslik">Anı</h3>
+        <div class="sheet-date" id="ak-tarih">📅 Tarih</div>
+        <div class="sheet-placeholder" id="ak-placeholder">💕</div>
+        <img class="sheet-foto" id="ak-foto" alt="Anı fotoğrafı" style="display:none;" />
+        <p class="sheet-text" id="ak-metin">Metin</p>
+        <button class="btn-sheet-close" id="sheet-close">Tamam 💛</button>
       </div>
     </div>
 
     <!-- ==========================================
          SURPRISE BUTTON
          ========================================== -->
-    <div class="surpriz-btn-container" id="surpriz-btn-container">
-      <button class="btn-surpriz" id="surpriz-btn">Sürprizi Aç 💌</button>
+    <div class="surpriz-container" id="surpriz-container">
+      <button class="btn-surpriz" id="btn-surpriz">Sürprizi Aç 💌</button>
     </div>
 
     <!-- ==========================================
@@ -110,6 +117,11 @@
         </div>
       </div>
     </div>
+
+    <!-- ==========================================
+         ALL FOUND CELEBRATION
+         ========================================== -->
+    <div class="confetti-canvas" id="confetti-canvas"></div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
