@@ -410,7 +410,7 @@
         lastMoveTime = performance.now();
 
         function tick(now) {
-            const dt = Math.min((now - lastMoveTime) / 16.67, 3); // normalize to ~60fps
+            const dt = Math.min((now - lastMoveTime) / 16.67, 3);
             lastMoveTime = now;
 
             let dlat = 0, dlng = 0;
@@ -428,13 +428,24 @@
             }
 
             const ll = characterMarker.getLatLng();
-            const newLL = clampToBounds(L.latLng(
-                ll.lat + dlat * MOVE_SPEED * dt,
-                ll.lng + dlng * MOVE_SPEED * dt
-            ));
+            const stepLat = dlat * MOVE_SPEED * dt;
+            const stepLng = dlng * MOVE_SPEED * dt;
+            const newLL = clampToBounds(L.latLng(ll.lat + stepLat, ll.lng + stepLng));
 
+            // Gerçek delta (clamp sonrası)
+            const actualDlat = newLL.lat - ll.lat;
+            const actualDlng = newLL.lng - ll.lng;
+
+            // Karakter + harita AYNI delta ile hareket → titreme sıfır
             characterMarker.setLatLng(newLL);
-            smoothCamera(newLL);
+            if (actualDlat !== 0 || actualDlng !== 0) {
+                const center = map.getCenter();
+                map.setView(
+                    [center.lat + actualDlat, center.lng + actualDlng],
+                    map.getZoom(),
+                    { animate: false }
+                );
+            }
 
             // Trail her ~150ms
             if (now - (tick._lastTrail || 0) > 150) {
