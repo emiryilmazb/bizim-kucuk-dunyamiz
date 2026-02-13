@@ -583,7 +583,7 @@
         const de = document.getElementById("ak-tarih"), fe = document.getElementById("ak-foto"), pe = document.getElementById("ak-placeholder");
         if (ani.tarih) { de.textContent = `📅 ${ani.tarih}`; de.style.display = "block"; } else de.style.display = "none";
         if (ani.foto) { fe.src = `assets/${ani.foto}`; fe.alt = ani.baslik; fe.style.display = "block"; pe.style.display = "none"; }
-        else { fe.style.display = "none"; pe.style.display = "flex"; pe.textContent = ["💕", "🌸", "🌅", "💫", "🎀", "🦋"][ani.id % 6]; }
+        else { fe.src = "assets/placeholder.jpeg"; fe.alt = ani.baslik; fe.style.display = "block"; pe.style.display = "none"; }
         document.getElementById("ak-metin").textContent = ani.metin;
         sheet.classList.add("show"); sheetOverlay.classList.add("show");
     }
