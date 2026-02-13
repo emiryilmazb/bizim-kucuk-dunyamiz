@@ -505,7 +505,7 @@
         characterMarker = L.marker([lat, lng], {
             icon: L.divIcon({
                 className: "heart-marker",
-                html: "💑",
+                html: '<span class="char-inner">💑</span>',
                 iconSize: [44, 44],
                 iconAnchor: [22, 22],
             }),

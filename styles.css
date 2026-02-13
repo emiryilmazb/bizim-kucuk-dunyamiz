@@ -412,7 +412,8 @@ body {
 /* ==========================================
    CHARACTER BOBBING (while moving)
    ========================================== */
-.heart-marker.moving {
+.heart-marker.moving .char-inner {
+  display: inline-block;
   animation: charBob 0.35s ease-in-out infinite alternate;
 }
 
@@ -424,6 +425,10 @@ body {
   100% {
     transform: translateY(-4px) scale(1.08);
   }
+}
+
+.char-inner {
+  display: inline-block;
 }
 
 /* ==========================================
@@ -807,6 +812,9 @@ body {
 .heart-marker.dragging {
   cursor: grabbing;
   filter: drop-shadow(0 6px 16px rgba(232, 128, 127, 0.6));
+}
+
+.heart-marker.dragging .char-inner {
   animation: charPulse 0.4s ease-out;
 }
 
