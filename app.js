@@ -160,6 +160,8 @@
             setupEventListeners();
             setupKeyboard();
             setupDpad();
+            setupSheetGestures();
+            setupLightbox();
             updateScore();
             setTimeout(() => showToast("💡", "Haritaya dokun veya yön tuşlarını kullan!"), 600);
         }, 100);
@@ -585,9 +587,102 @@
         if (ani.foto) { fe.src = `assets/${ani.foto}`; fe.alt = ani.baslik; fe.style.display = "block"; pe.style.display = "none"; }
         else { fe.src = "assets/placeholder.jpeg"; fe.alt = ani.baslik; fe.style.display = "block"; pe.style.display = "none"; }
         document.getElementById("ak-metin").textContent = ani.metin;
+        sheet.classList.remove("expanded");
         sheet.classList.add("show"); sheetOverlay.classList.add("show");
     }
-    function hideSheet() { sheet.classList.remove("show"); sheetOverlay.classList.remove("show"); }
+
+    function hideSheet() {
+        sheet.classList.remove("show", "expanded");
+        sheetOverlay.classList.remove("show");
+        sheet.style.transform = "";
+    }
+
+    // ==========================================
+    //  SHEET SWIPE GESTURES
+    // ==========================================
+    function setupSheetGestures() {
+        const handle = sheet.querySelector(".sheet-handle");
+        if (!handle) return;
+
+        let startY = 0, currentY = 0, isDragging = false;
+
+        function onStart(e) {
+            isDragging = true;
+            startY = (e.touches ? e.touches[0] : e).clientY;
+            currentY = startY;
+            sheet.classList.add("dragging");
+        }
+
+        function onMove(e) {
+            if (!isDragging) return;
+            currentY = (e.touches ? e.touches[0] : e).clientY;
+            const dy = currentY - startY;
+
+            if (dy > 0) {
+                // Aşağı sürükleme — kapatma
+                sheet.style.transform = `translateY(${dy}px)`;
+            } else {
+                // Yukarı sürükleme — genişletme (direnç ile)
+                const resistance = Math.abs(dy) * 0.3;
+                sheet.style.transform = `translateY(${-resistance}px)`;
+            }
+        }
+
+        function onEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            sheet.classList.remove("dragging");
+            const dy = currentY - startY;
+
+            if (dy > 80) {
+                // Yeterince aşağı çekildi → kapat
+                hideSheet();
+            } else if (dy < -50) {
+                // Yeterince yukarı çekildi → genişlet
+                sheet.style.transform = "";
+                sheet.classList.add("expanded");
+            } else {
+                // Yetersiz → eski konuma dön
+                sheet.style.transform = "";
+            }
+        }
+
+        // Touch
+        handle.addEventListener("touchstart", onStart, { passive: true });
+        document.addEventListener("touchmove", e => { if (isDragging) onMove(e); }, { passive: true });
+        document.addEventListener("touchend", onEnd);
+        document.addEventListener("touchcancel", onEnd);
+
+        // Mouse
+        handle.addEventListener("mousedown", onStart);
+        document.addEventListener("mousemove", e => { if (isDragging) onMove(e); });
+        document.addEventListener("mouseup", onEnd);
+    }
+
+    // ==========================================
+    //  LIGHTBOX (fullscreen photo)
+    // ==========================================
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+    const lightboxClose = document.getElementById("lightbox-close");
+
+    function setupLightbox() {
+        // Fotoğrafa tıkla → fullscreen aç
+        document.getElementById("ak-foto").addEventListener("click", () => {
+            const src = document.getElementById("ak-foto").src;
+            if (!src) return;
+            lightboxImg.src = src;
+            lightbox.classList.add("show");
+        });
+
+        // Kapat
+        lightboxClose.addEventListener("click", closeLightbox);
+        lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove("show");
+    }
 
     function showSurpriseButton() { if (!surpriseShown) surprizContainer.classList.add("show"); }
 
@@ -670,7 +765,7 @@
         modalTekrar.addEventListener("click", () => typewriterModal(finalMesaj));
         modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) closeSurpriseModal(); });
         btnCompass.addEventListener("click", flyToNearest);
-        document.addEventListener("keydown", e => { if (e.key === "Escape") { closeSurpriseModal(); hideSheet(); } });
+        document.addEventListener("keydown", e => { if (e.key === "Escape") { closeLightbox(); closeSurpriseModal(); hideSheet(); } });
     }
 
     // ---------- Start ----------

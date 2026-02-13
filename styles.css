@@ -122,10 +122,9 @@ body {
 .step1-text {
   font-family: var(--font-d);
   font-size: clamp(1.1rem, 4vw, 1.4rem);
-  color: rgba(255; 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1.8;
   min-height: 3em;
-  color: rgba(255, 255, 255, 0.9);
 }
 
 .step1-tap,
@@ -892,7 +891,7 @@ body {
 }
 
 /* ==========================================
-   BOTTOM SHEET
+   BOTTOM SHEET (swipeable)
    ========================================== */
 .sheet-overlay {
   position: fixed;
@@ -919,24 +918,113 @@ body {
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: var(--shadow-lg);
   transform: translateY(100%);
-  transition: transform 0.45s var(--bounce);
-  max-height: 70vh;
-  max-height: 70svh;
-  overflow-y: auto;
+  max-height: 45vh;
+  max-height: 45svh;
+  overflow: hidden;
   overscroll-behavior: contain;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  will-change: transform, max-height;
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), max-height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .sheet.show {
   transform: translateY(0);
 }
 
+.sheet.expanded {
+  max-height: 90vh;
+  max-height: 90svh;
+  overflow-y: auto;
+}
+
+.sheet.dragging {
+  transition: none !important;
+}
+
 .sheet-handle {
+  padding: 12px 0 6px;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sheet-handle-bar {
   width: 40px;
   height: 5px;
   background: var(--gold-light);
   border-radius: 50px;
-  margin: 10px auto 0;
+  transition: width 0.2s;
+}
+
+.sheet.expanded .sheet-handle-bar {
+  width: 50px;
+  background: var(--muted);
+}
+
+/* ==========================================
+   LIGHTBOX (fullscreen photo)
+   ========================================== */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+  cursor: zoom-out;
+}
+
+.lightbox.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox-img {
+  max-width: 95vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  transform: scale(0.85);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lightbox.show .lightbox-img {
+  transform: scale(1);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  top: calc(env(safe-area-inset-top, 16px) + 8px);
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s;
+}
+
+.lightbox-close:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sheet-foto {
+  cursor: pointer;
 }
 
 .sheet-body {
