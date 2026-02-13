@@ -546,7 +546,7 @@ body {
 }
 
 /* ==========================================
-   WARMTH / DISTANCE BADGE
+   WARMTH / DISTANCE BADGE (redesigned)
    ========================================== */
 .distance-badge {
   position: fixed;
@@ -555,22 +555,68 @@ body {
   transform: translateX(-50%);
   z-index: 1000;
   background: var(--card);
-  padding: 5px 14px;
+  padding: 6px 14px 6px 8px;
   border-radius: 50px;
   box-shadow: var(--shadow);
-  font-size: 0.78rem;
-  color: var(--text2);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   pointer-events: none;
   transition: opacity var(--fast);
   white-space: nowrap;
 }
 
+.warmth-arrow-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink), var(--lavender));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s ease-out, background 0.3s;
+}
+
+.warmth-arrow-svg {
+  color: var(--accent);
+  transition: color 0.3s;
+}
+
+/* Color the arrow based on warmth via sibling dot class */
+.warmth-dot.hot ~ .warmth-arrow-wrap,
+.distance-badge:has(.warmth-dot.hot) .warmth-arrow-wrap {
+  background: linear-gradient(135deg, #fce4ec, #ffcdd2);
+}
+.distance-badge:has(.warmth-dot.hot) .warmth-arrow-svg { color: #e74c3c; }
+.distance-badge:has(.warmth-dot.warm) .warmth-arrow-svg { color: #e67e22; }
+.distance-badge:has(.warmth-dot.mild) .warmth-arrow-svg { color: #f1c40f; }
+.distance-badge:has(.warmth-dot.cold) .warmth-arrow-svg { color: #3498db; }
+
+.warmth-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.15;
+}
+
+.warmth-label {
+  font-weight: 600;
+  font-size: 0.73rem;
+  transition: color 0.3s;
+  color: var(--text);
+}
+
+.warmth-dist {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .warmth-dot {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .warmth-dot.hot {
@@ -582,26 +628,13 @@ body {
   100% { transform: scale(1.3); }
 }
 
-.warmth-label {
-  font-weight: 600;
-  font-size: 0.75rem;
-  transition: color 0.3s;
+/* Guide line animation on the map */
+.guide-line-path {
+  animation: guideDash 1.5s linear infinite;
 }
 
-.warmth-dot.hot + .warmth-label { color: #e74c3c; }
-.warmth-dot.warm + .warmth-label { color: #e67e22; }
-.warmth-dot.mild + .warmth-label { color: #f1c40f; }
-.warmth-dot.cold + .warmth-label { color: #3498db; }
-
-.distance-sep {
-  color: var(--muted);
-  font-size: 0.7rem;
-}
-
-.distance-arrow {
-  font-size: 1rem;
-  display: inline-block;
-  transition: transform 0.3s;
+@keyframes guideDash {
+  to { stroke-dashoffset: -32; }
 }
 
 /* ==========================================

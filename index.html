@@ -117,13 +117,18 @@
         <div class="game-progress-fill" id="progress-fill"></div>
       </div>
 
-      <!-- Warmth Indicator -->
+      <!-- Warmth Indicator (redesigned) -->
       <div class="distance-badge" id="distance-badge">
+        <div class="warmth-arrow-wrap" id="warmth-arrow-wrap">
+          <svg class="warmth-arrow-svg" id="warmth-arrow-svg" viewBox="0 0 24 24" width="20" height="20">
+            <path d="M12 2 L8 10 L12 8 L16 10 Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="warmth-info">
+          <span class="warmth-label" id="warmth-label">Soğuk</span>
+          <span class="warmth-dist" id="distance-text">--</span>
+        </div>
         <span class="warmth-dot" id="warmth-dot">🔵</span>
-        <span class="warmth-label" id="warmth-label">Soğuk</span>
-        <span class="distance-sep">·</span>
-        <span class="distance-arrow" id="distance-arrow">↑</span>
-        <span class="distance-text" id="distance-text">--</span>
       </div>
 
       <!-- Toast -->

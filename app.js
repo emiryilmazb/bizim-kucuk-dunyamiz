@@ -32,7 +32,6 @@
     const progressFill = document.getElementById("progress-fill");
     const distanceBadge = document.getElementById("distance-badge");
     const distanceText = document.getElementById("distance-text");
-    const distanceArrow = document.getElementById("distance-arrow");
     const toast = document.getElementById("toast");
     const toastText = document.getElementById("toast-text");
     const discoveryFlash = document.getElementById("discovery-flash");
@@ -300,6 +299,7 @@
 
         if (closestDist === Infinity) {
             if (distanceBadge) distanceBadge.style.opacity = "0";
+            updateGuideLine(null, null);
             return;
         }
 
@@ -321,11 +321,42 @@
         }
         if (distanceBadge) distanceBadge.style.opacity = "1";
 
-        if (closest && distanceArrow) {
-            const mLL = closest.getLatLng();
-            const angle = Math.atan2(mLL.lng - charLL.lng, mLL.lat - charLL.lat) * (180 / Math.PI);
-            distanceArrow.style.transform = `rotate(${-angle + 180}deg)`;
+        // SVG arrow direction — use screen-space pixels for correct rotation
+        if (closest) {
+            const arrowWrap = document.getElementById("warmth-arrow-wrap");
+            if (arrowWrap) {
+                const charPx = map.latLngToContainerPoint(charLL);
+                const targetPx = map.latLngToContainerPoint(closest.getLatLng());
+                // atan2(dx, -dy) because screen Y is inverted (down = positive)
+                const angle = Math.atan2(targetPx.x - charPx.x, -(targetPx.y - charPx.y)) * (180 / Math.PI);
+                arrowWrap.style.transform = `rotate(${angle}deg)`;
+            }
+
+            // Update guide line
+            updateGuideLine(charLL, closest.getLatLng());
         }
+    }
+
+    // ==========================================
+    //  GUIDE LINE — dashed line from avatar to next marker
+    // ==========================================
+    let guideLine = null;
+    function updateGuideLine(fromLL, toLL) {
+        if (guideLine) { map.removeLayer(guideLine); guideLine = null; }
+        if (!fromLL || !toLL) return;
+
+        guideLine = L.polyline([
+            [fromLL.lat, fromLL.lng],
+            [toLL.lat, toLL.lng]
+        ], {
+            color: "#e8807f",
+            weight: 2,
+            opacity: 0.4,
+            dashArray: "6,10",
+            lineCap: "round",
+            interactive: false,
+            className: "guide-line-path"
+        }).addTo(map);
     }
 
     // ==========================================
