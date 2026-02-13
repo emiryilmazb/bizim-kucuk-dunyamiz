@@ -607,6 +607,8 @@
         let startY = 0, currentY = 0, isDragging = false;
 
         function onStart(e) {
+            // Eğer scroll varsa ve yukarıda değilsek, gesture başlatma
+            if (sheet.scrollTop > 5 && sheet.classList.contains("expanded")) return;
             isDragging = true;
             startY = (e.touches ? e.touches[0] : e).clientY;
             currentY = startY;
@@ -622,8 +624,8 @@
                 // Aşağı sürükleme — kapatma
                 sheet.style.transform = `translateY(${dy}px)`;
             } else {
-                // Yukarı sürükleme — genişletme (direnç ile)
-                const resistance = Math.abs(dy) * 0.3;
+                // Yukarı sürükleme — genişletme
+                const resistance = Math.abs(dy) * 0.5;
                 sheet.style.transform = `translateY(${-resistance}px)`;
             }
         }
@@ -634,11 +636,11 @@
             sheet.classList.remove("dragging");
             const dy = currentY - startY;
 
-            if (dy > 80) {
-                // Yeterince aşağı çekildi → kapat
+            if (dy > 60) {
+                // Aşağı çekildi → kapat
                 hideSheet();
-            } else if (dy < -50) {
-                // Yeterince yukarı çekildi → genişlet
+            } else if (dy < -30) {
+                // Yukarı çekildi → genişlet
                 sheet.style.transform = "";
                 sheet.classList.add("expanded");
             } else {
@@ -647,13 +649,20 @@
             }
         }
 
-        // Touch
-        handle.addEventListener("touchstart", onStart, { passive: true });
+        // Handle + sheet body gesture
+        [handle, sheet].forEach(el => {
+            el.addEventListener("touchstart", e => {
+                // Sheet body'den sadece scroll en üstteyse başlat
+                if (el === sheet && sheet.scrollTop > 5) return;
+                onStart(e);
+            }, { passive: true });
+        });
+
         document.addEventListener("touchmove", e => { if (isDragging) onMove(e); }, { passive: true });
         document.addEventListener("touchend", onEnd);
         document.addEventListener("touchcancel", onEnd);
 
-        // Mouse
+        // Mouse (desktop)
         handle.addEventListener("mousedown", onStart);
         document.addEventListener("mousemove", e => { if (isDragging) onMove(e); });
         document.addEventListener("mouseup", onEnd);
