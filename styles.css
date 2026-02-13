@@ -1,6 +1,6 @@
 /* ==========================================
    Bizim Küçük Dünyamız 🌍💛
-   Valentine's Day Game — CSS
+   Valentine's Day Game — CSS v5
    ========================================== */
 
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap");
@@ -44,7 +44,7 @@ body {
   overflow: hidden;
   font-family: var(--font);
   color: var(--text);
-  background: var(--bg);
+  background: #1a0a0e;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
@@ -52,23 +52,42 @@ body {
 }
 
 /* ==========================================
-   SPLASH / INTRO SCREEN
+   INTRO STEPS — Common
    ========================================== */
-.splash {
+.intro-step {
   position: fixed;
   inset: 0;
   z-index: 9000;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
-  transition: opacity 0.5s, visibility 0.5s;
-}
-
-.splash.hidden {
   opacity: 0;
   visibility: hidden;
-  pointer-events: none;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.intro-step.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.step-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* ==========================================
+   STEP 1 — Opening Heart
+   ========================================== */
+.step-1 {
+  background: radial-gradient(circle at center, #2d1520 0%, #1a0a0e 70%);
 }
 
 #particles-canvas {
@@ -77,109 +96,258 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
-.splash-content {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 2rem 1.5rem;
-  max-width: 420px;
-  animation: fadeInUp 0.8s ease-out;
+.step1-heart {
+  font-size: 4rem;
+  animation: heartGlow 1.8s ease-in-out infinite;
+  margin-bottom: 1.5rem;
 }
 
-.splash-hearts {
-  font-size: 3rem;
-  margin-bottom: 0.75rem;
-  animation: heartbeat 1.5s ease-in-out infinite;
-}
-
-@keyframes heartbeat {
+@keyframes heartGlow {
 
   0%,
   100% {
     transform: scale(1);
-  }
-
-  25% {
-    transform: scale(1.15);
+    filter: brightness(1);
   }
 
   50% {
-    transform: scale(1);
-  }
-
-  75% {
-    transform: scale(1.1);
+    transform: scale(1.2);
+    filter: brightness(1.4) drop-shadow(0 0 30px rgba(232, 128, 127, 0.8));
   }
 }
 
-.splash-title {
+.step1-text {
   font-family: var(--font-d);
-  font-size: clamp(1.8rem, 7vw, 2.8rem);
-  font-weight: 600;
-  color: var(--text);
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  color: rgba(255; 255, 255, 0.9);
+  line-height: 1.8;
+  min-height: 3em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.step1-tap,
+.step2-tap,
+.step3-tap {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ==========================================
+   STEP 2 — Love Letter
+   ========================================== */
+.step-2 {
+  background: radial-gradient(circle at center, #2d1a20 0%, #1a0a0e 70%);
+}
+
+.letter-envelope {
+  font-size: 3.5rem;
   margin-bottom: 0.5rem;
-  line-height: 1.2;
+  animation: envelopeFloat 3s ease-in-out infinite;
 }
 
-.splash-sub {
-  font-size: clamp(0.9rem, 3vw, 1.1rem);
-  color: var(--text2);
-  margin-bottom: 1.5rem;
+@keyframes envelopeFloat {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
 }
 
-.splash-sub strong {
-  color: var(--accent);
+.letter-content {
+  margin-top: 1.5rem;
 }
 
-.splash-mission {
-  background: var(--card);
-  border: 2px solid var(--gold-light);
-  border-radius: var(--radius);
-  padding: 1rem 1.2rem;
-  margin-bottom: 2rem;
-  text-align: center;
+.letter-line {
+  font-family: var(--font-d);
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.mission-icon {
-  font-size: 2rem;
+.letter-line.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================
+   STEP 3 — Memories
+   ========================================== */
+.step-3 {
+  background: radial-gradient(circle at center, #1a1525 0%, #1a0a0e 70%);
+}
+
+.memories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 240px;
+  margin: 0 auto 1.5rem;
+}
+
+.mem-card {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  opacity: 0;
+  transform: scale(0.5) rotateY(90deg);
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mem-card.show {
+  opacity: 1;
+  transform: scale(1) rotateY(0deg);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(232, 128, 127, 0.3);
+}
+
+.step3-title {
+  font-family: var(--font-d);
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 0.4rem;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.8s;
 }
 
-.splash-mission p {
+.step-3.active .step3-title {
+  opacity: 1;
+}
+
+.step3-sub {
   font-size: 0.9rem;
-  color: var(--text2);
-  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transition: opacity 0.8s ease 1.2s;
 }
 
-.splash-mission strong {
-  color: var(--accent);
+.step-3.active .step3-sub {
+  opacity: 1;
 }
 
-.btn-play {
+/* ==========================================
+   STEP 4 — Mission Briefing
+   ========================================== */
+.step-4 {
+  background: radial-gradient(circle at center, #1a1a25 0%, #1a0a0e 70%);
+}
+
+.mission-badge {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+  animation: badgeBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes badgeBounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.step4-title {
+  font-family: var(--font-d);
+  font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1.25rem;
+}
+
+.mission-rules {
+  text-align: left;
+  max-width: 280px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.rule.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.rule-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.rule span:last-child {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.btn-start {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem 2.5rem;
+  padding: 0.9rem 2.2rem;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: #fff;
   border: none;
   border-radius: 50px;
   font-family: var(--font);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 6px 25px var(--accent-glow);
-  transition: var(--bounce);
+  transition: transform 0.3s, box-shadow 0.3s;
   animation: pulseBtn 2s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.5s ease 1.5s, transform 0.3s, box-shadow 0.3s;
 }
 
-.btn-play:hover,
-.btn-play:active {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 35px var(--accent-glow);
+.step-4.active .btn-start {
+  opacity: 1;
+}
+
+.btn-start:active {
+  transform: scale(0.95);
 }
 
 @keyframes pulseBtn {
@@ -190,7 +358,7 @@ body {
   }
 
   50% {
-    box-shadow: 0 6px 40px rgba(232, 128, 127, 0.55);
+    box-shadow: 0 6px 40px rgba(232, 128, 127, 0.6);
   }
 }
 
@@ -209,7 +377,7 @@ body {
 }
 
 /* ==========================================
-   HUD (Heads-Up Display)
+   HUD
    ========================================== */
 .hud {
   position: fixed;
@@ -221,7 +389,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: env(safe-area-inset-top, 8px) 12px 8px;
-  background: linear-gradient(180deg, rgba(253, 246, 240, 0.95) 0%, rgba(253, 246, 240, 0.0) 100%);
+  background: linear-gradient(180deg, rgba(253, 246, 240, 0.95) 0%, rgba(253, 246, 240, 0) 100%);
   pointer-events: none;
 }
 
@@ -250,6 +418,24 @@ body {
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--text);
+}
+
+.hud-score.pop {
+  animation: scorePop 0.4s var(--bounce);
+}
+
+@keyframes scorePop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .hud-heart {
@@ -382,78 +568,7 @@ body {
 }
 
 /* ==========================================
-   FLOATING EMOJIS (on discovery)
-   ========================================== */
-.floating-emoji {
-  position: fixed;
-  z-index: 1500;
-  font-size: 1.4rem;
-  pointer-events: none;
-  animation: floatUp 1.3s ease-out forwards;
-}
-
-@keyframes floatUp {
-  0% {
-    opacity: 1;
-    transform: translateY(0) translateX(0) scale(0.5);
-  }
-
-  30% {
-    opacity: 1;
-    transform: translateY(-30px) translateX(var(--dx, 0px)) scale(1.2);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(-100px) translateX(var(--dx, 0px)) scale(0.6);
-  }
-}
-
-/* ==========================================
-   CHARACTER BOBBING (while moving)
-   ========================================== */
-.heart-marker.moving .char-inner {
-  display: inline-block;
-  animation: charBob 0.35s ease-in-out infinite alternate;
-}
-
-@keyframes charBob {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-
-  100% {
-    transform: translateY(-4px) scale(1.08);
-  }
-}
-
-.char-inner {
-  display: inline-block;
-}
-
-/* ==========================================
-   SCORE POP
-   ========================================== */
-.hud-score.pop {
-  animation: scorePop 0.4s var(--bounce);
-}
-
-@keyframes scorePop {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.25);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* ==========================================
-   TOAST NOTIFICATION
+   TOAST
    ========================================== */
 .toast {
   position: fixed;
@@ -512,7 +627,272 @@ body {
 }
 
 /* ==========================================
-   BOTTOM SHEET (Memory Card)
+   FLOATING EMOJIS
+   ========================================== */
+.floating-emoji {
+  position: fixed;
+  z-index: 1500;
+  font-size: 1.4rem;
+  pointer-events: none;
+  animation: floatUp 1.3s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(0.5);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-30px) translateX(var(--dx, 0px)) scale(1.2);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) translateX(var(--dx, 0px)) scale(0.6);
+  }
+}
+
+/* ==========================================
+   CHARACTER
+   ========================================== */
+.char-inner {
+  display: inline-block;
+}
+
+.heart-marker {
+  font-size: 2rem;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: 1000 !important;
+  transition: filter 0.2s;
+}
+
+.heart-marker.dragging {
+  cursor: grabbing;
+  filter: drop-shadow(0 6px 16px rgba(232, 128, 127, 0.6));
+}
+
+.heart-marker.dragging .char-inner {
+  animation: charPulse 0.4s ease-out;
+}
+
+.heart-marker.moving .char-inner {
+  display: inline-block;
+  animation: charBob 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes charPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.3);
+  }
+
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes charBob {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(-4px) scale(1.08);
+  }
+}
+
+/* ==========================================
+   MEMORY MARKERS
+   ========================================== */
+.memory-marker {
+  transition: transform 0.3s;
+}
+
+.marker-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  transition: all 0.4s var(--bounce);
+}
+
+.memory-marker.undiscovered .marker-inner {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  animation: mysteryPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes mysteryPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 2px 20px rgba(212, 165, 116, 0.45);
+  }
+}
+
+.memory-marker.discovered .marker-inner {
+  background: linear-gradient(135deg, var(--pink), var(--lavender));
+  box-shadow: 0 2px 15px var(--accent-glow);
+  animation: discoveredPop 0.5s var(--bounce);
+}
+
+@keyframes discoveredPop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.35);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.memory-marker.nearby .marker-inner {
+  animation: nearbyGlow 1s ease-in-out infinite;
+}
+
+@keyframes nearbyGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px var(--accent-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 25px var(--accent);
+    transform: scale(1.15);
+  }
+}
+
+/* Leaflet overrides */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 160px;
+}
+
+.leaflet-popup-tip {
+  box-shadow: none !important;
+}
+
+.popup-content {
+  padding: 0.7rem 1rem;
+}
+
+.popup-content h3 {
+  font-family: var(--font-d);
+  font-size: 0.9rem;
+  color: var(--text);
+  margin-bottom: 0.15rem;
+}
+
+.popup-content .popup-date {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* ==========================================
+   D-PAD
+   ========================================== */
+.dpad {
+  position: fixed;
+  bottom: 24px;
+  left: 16px;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.dpad-mid {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dpad-center {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.dpad-btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(61, 44, 46, 0.12);
+  font-size: 1rem;
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.dpad-btn:active,
+.dpad-btn.active {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(0.92);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .dpad {
+    display: none;
+  }
+}
+
+.leaflet-bottom.leaflet-right {
+  bottom: 160px !important;
+}
+
+/* ==========================================
+   BOTTOM SHEET
    ========================================== */
 .sheet-overlay {
   position: fixed;
@@ -705,7 +1085,7 @@ body {
 .modal-emoji {
   font-size: 3rem;
   margin-bottom: 0.6rem;
-  animation: heartbeat 1.5s infinite;
+  animation: heartGlow 1.5s infinite;
 }
 
 .modal h2 {
@@ -787,156 +1167,13 @@ body {
 }
 
 /* ==========================================
-   CONFETTI CANVAS
+   CONFETTI
    ========================================== */
 .confetti-canvas {
   position: fixed;
   inset: 0;
   z-index: 4000;
   pointer-events: none;
-}
-
-/* ==========================================
-   MAP MARKER STYLES
-   ========================================== */
-.heart-marker {
-  font-size: 2rem;
-  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  z-index: 1000 !important;
-  transition: filter 0.2s;
-}
-
-.heart-marker.dragging {
-  cursor: grabbing;
-  filter: drop-shadow(0 6px 16px rgba(232, 128, 127, 0.6));
-}
-
-.heart-marker.dragging .char-inner {
-  animation: charPulse 0.4s ease-out;
-}
-
-@keyframes charPulse {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.3);
-  }
-
-  100% {
-    transform: scale(1.15);
-  }
-}
-
-.memory-marker {
-  transition: transform 0.3s;
-}
-
-.marker-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  transition: all 0.4s var(--bounce);
-}
-
-.memory-marker.undiscovered .marker-inner {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  animation: mysteryPulse 2.5s ease-in-out infinite;
-}
-
-@keyframes mysteryPulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  }
-
-  50% {
-    transform: scale(1.1);
-    box-shadow: 0 2px 20px rgba(212, 165, 116, 0.45);
-  }
-}
-
-.memory-marker.discovered .marker-inner {
-  background: linear-gradient(135deg, var(--pink), var(--lavender));
-  box-shadow: 0 2px 15px var(--accent-glow);
-  animation: discoveredPop 0.5s var(--bounce);
-}
-
-@keyframes discoveredPop {
-  0% {
-    transform: scale(0.3);
-    opacity: 0;
-  }
-
-  60% {
-    transform: scale(1.35);
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.memory-marker.nearby .marker-inner {
-  animation: nearbyGlow 1s ease-in-out infinite;
-}
-
-@keyframes nearbyGlow {
-
-  0%,
-  100% {
-    box-shadow: 0 0 8px var(--accent-glow);
-  }
-
-  50% {
-    box-shadow: 0 0 25px var(--accent);
-    transform: scale(1.15);
-  }
-}
-
-/* Leaflet overrides */
-.leaflet-popup-content-wrapper {
-  border-radius: var(--radius) !important;
-  box-shadow: var(--shadow) !important;
-  padding: 0 !important;
-  overflow: hidden;
-}
-
-.leaflet-popup-content {
-  margin: 0 !important;
-  min-width: 160px;
-}
-
-.leaflet-popup-tip {
-  box-shadow: none !important;
-}
-
-.popup-content {
-  padding: 0.7rem 1rem;
-}
-
-.popup-content h3 {
-  font-family: var(--font-d);
-  font-size: 0.9rem;
-  color: var(--text);
-  margin-bottom: 0.15rem;
-}
-
-.popup-content .popup-date {
-  font-size: 0.75rem;
-  color: var(--muted);
 }
 
 /* ==========================================
@@ -952,80 +1189,6 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* ==========================================
-   D-PAD (On-Screen Controls)
-   ========================================== */
-.dpad {
-  position: fixed;
-  bottom: 24px;
-  left: 16px;
-  z-index: 1100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  user-select: none;
-  -webkit-user-select: none;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.dpad-mid {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.dpad-center {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-}
-
-.dpad-btn {
-  width: 48px;
-  height: 48px;
-  border: none;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 12px rgba(61, 44, 46, 0.12);
-  font-size: 1rem;
-  color: var(--text2);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, transform 0.15s;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: none;
-}
-
-.dpad-btn:active,
-.dpad-btn.active {
-  background: var(--accent);
-  color: #fff;
-  transform: scale(0.92);
-  box-shadow: 0 2px 8px var(--accent-glow);
-}
-
-/* Desktop — gizle (klavye var) */
-@media (min-width: 1024px) and (hover: hover) {
-  .dpad {
-    display: none;
-  }
-}
-
-/* Zoom control'ü dpad'in üstüne çıkart */
-.leaflet-bottom.leaflet-right {
-  bottom: 160px !important;
 }
 
 /* ==========================================
@@ -1056,25 +1219,35 @@ body {
     padding: 1.5rem 1.25rem;
   }
 
-  .btn-play {
-    padding: 0.85rem 2rem;
-    font-size: 1rem;
+  .step-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .mem-card {
+    font-size: 1.3rem;
   }
 }
 
 @media (max-height: 600px) {
-  .splash-content {
+  .step-content {
     padding: 1rem;
   }
 
-  .splash-hearts {
-    font-size: 2rem;
-    margin-bottom: 0.3rem;
+  .step1-heart {
+    font-size: 3rem;
   }
 
-  .splash-mission {
-    padding: 0.7rem;
-    margin-bottom: 1rem;
+  .letter-envelope {
+    font-size: 2.5rem;
+  }
+
+  .memories-grid {
+    gap: 8px;
+    max-width: 200px;
+  }
+
+  .mission-rules {
+    gap: 6px;
   }
 
   .sheet {
@@ -1082,7 +1255,6 @@ body {
   }
 }
 
-/* Leaflet touch */
 .leaflet-container {
   touch-action: pan-x pan-y;
 }
@@ -1096,7 +1268,6 @@ body {
   transform-origin: bottom right;
 }
 
-/* Hide default Leaflet attribution on small screens */
 @media (max-width: 500px) {
   .leaflet-control-attribution {
     font-size: 8px !important;

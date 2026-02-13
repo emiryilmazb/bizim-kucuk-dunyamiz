@@ -8,43 +8,86 @@
     <meta name="theme-color" content="#e8807f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin="" />
-
-    <!-- App CSS -->
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+
     <!-- ==========================================
-         INTRO / SPLASH SCREEN
+         INTRO — Step 1: Opening
          ========================================== -->
-    <div class="splash" id="splash">
+    <div class="intro-step step-1 active" id="step-1">
       <canvas id="particles-canvas"></canvas>
-      <div class="splash-content">
-        <div class="splash-hearts">💕</div>
-        <h1 class="splash-title">Bizim Küçük Dünyamız</h1>
-        <p class="splash-sub" id="splash-sub">Senin için bir sürpriz hazırladım...</p>
-        <div class="splash-mission">
-          <div class="mission-icon">🗺️</div>
-          <p>İstanbul'daki <strong>gizli anılarımızı</strong> bul!<br>
-          🎮 Kontroller ile veya haritaya dokunarak hareket et<br>
-          ❓ noktalarını keşfet!</p>
+      <div class="step-content">
+        <div class="step1-heart">💖</div>
+        <p class="step1-text" id="step1-text"></p>
+        <div class="step1-tap">dokun ✨</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         INTRO — Step 2: Love Letter
+         ========================================== -->
+    <div class="intro-step step-2" id="step-2">
+      <div class="step-content">
+        <div class="letter-envelope" id="envelope">
+          <div class="envelope-flap"></div>
+          <div class="envelope-body">💌</div>
         </div>
-        <button class="btn-play" id="btn-play">Oyuna Başla 💛</button>
+        <div class="letter-content" id="letter-content">
+          <p class="letter-line" data-delay="0">Seninle tanıştığım günden beri</p>
+          <p class="letter-line" data-delay="600">her şey daha güzel 🌸</p>
+          <p class="letter-line" data-delay="1200">her an daha değerli 💫</p>
+          <p class="letter-line" data-delay="1800">her gün daha renkli oldu 🌈</p>
+        </div>
+        <div class="step2-tap">dokun 💛</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         INTRO — Step 3: Memories Reveal
+         ========================================== -->
+    <div class="intro-step step-3" id="step-3">
+      <div class="step-content">
+        <div class="memories-grid" id="memories-grid">
+          <div class="mem-card"><span>💕</span></div>
+          <div class="mem-card"><span>🌅</span></div>
+          <div class="mem-card"><span>🎭</span></div>
+          <div class="mem-card"><span>🏰</span></div>
+          <div class="mem-card"><span>🎨</span></div>
+          <div class="mem-card"><span>✨</span></div>
+        </div>
+        <h2 class="step3-title" id="step3-title">Bu anıları hatırlıyor musun?</h2>
+        <p class="step3-sub">Her biri İstanbul'un bir köşesinde saklı...</p>
+        <div class="step3-tap">dokun 🗺️</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         INTRO — Step 4: Mission
+         ========================================== -->
+    <div class="intro-step step-4" id="step-4">
+      <div class="step-content">
+        <div class="mission-badge">🎮</div>
+        <h2 class="step4-title">Görev: Anıları Keşfet</h2>
+        <div class="mission-rules">
+          <div class="rule"><span class="rule-icon">🗺️</span><span>Haritaya dokunarak ilerle</span></div>
+          <div class="rule"><span class="rule-icon">🎮</span><span>Yön tuşlarıyla kontrol et</span></div>
+          <div class="rule"><span class="rule-icon">❓</span><span>Gizli anıları bul</span></div>
+          <div class="rule"><span class="rule-icon">🔥</span><span>Sıcak/soğuk ipucunu takip et</span></div>
+        </div>
+        <button class="btn-start" id="btn-start">Hazırım, Başla! 💖</button>
       </div>
     </div>
 
     <!-- ==========================================
          GAME SCREEN
          ========================================== -->
-    <div class="game" id="game">
-      <!-- Map fills entire screen -->
+    <div class="game" id="game" style="display:none;">
       <div id="map"></div>
 
-      <!-- HUD (Heads-Up Display) -->
+      <!-- HUD -->
       <div class="hud">
         <div class="hud-left">
           <div class="hud-score" id="hud-score">
@@ -65,7 +108,7 @@
         <div class="game-progress-fill" id="progress-fill"></div>
       </div>
 
-      <!-- Warmth Indicator (Sıcak / Soğuk) -->
+      <!-- Warmth Indicator -->
       <div class="distance-badge" id="distance-badge">
         <span class="warmth-dot" id="warmth-dot">🔵</span>
         <span class="warmth-label" id="warmth-label">Soğuk</span>
@@ -74,7 +117,7 @@
         <span class="distance-text" id="distance-text">--</span>
       </div>
 
-      <!-- Discovery Toast -->
+      <!-- Toast -->
       <div class="toast" id="toast">
         <span class="toast-emoji">💕</span>
         <span class="toast-text" id="toast-text">Yeni anı keşfedildi!</span>
@@ -83,12 +126,12 @@
       <!-- Discovery Flash -->
       <div class="discovery-flash" id="discovery-flash"></div>
 
-      <!-- D-Pad Controls -->
+      <!-- D-Pad -->
       <div class="dpad" id="dpad">
         <button class="dpad-btn dpad-up" id="dpad-up" aria-label="Yukarı">▲</button>
         <div class="dpad-mid">
           <button class="dpad-btn dpad-left" id="dpad-left" aria-label="Sol">◀</button>
-          <div class="dpad-center">💑</div>
+          <div class="dpad-center">💖</div>
           <button class="dpad-btn dpad-right" id="dpad-right" aria-label="Sağ">▶</button>
         </div>
         <button class="dpad-btn dpad-down" id="dpad-down" aria-label="Aşağı">▼</button>
@@ -96,7 +139,7 @@
     </div>
 
     <!-- ==========================================
-         ANI KARTI (Memory Card) — Bottom Sheet
+         BOTTOM SHEET
          ========================================== -->
     <div class="sheet-overlay" id="sheet-overlay"></div>
     <div class="sheet" id="sheet">
@@ -133,17 +176,12 @@
       </div>
     </div>
 
-    <!-- ==========================================
-         ALL FOUND CELEBRATION
-         ========================================== -->
+    <!-- Confetti -->
     <canvas class="confetti-canvas" id="confetti-canvas"></canvas>
 
-    <!-- Leaflet JS -->
+    <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""></script>
-
-    <!-- App Scripts -->
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="data.js"></script>
     <script src="app.js"></script>
   </body>
