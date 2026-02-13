@@ -1,6 +1,6 @@
 /* ==========================================
    Bizim Küçük Dünyamız 🌍💛
-   Valentine's Day Game — CSS v5
+   Valentine's Day Game — CSS v6 (Story Exploration)
    ========================================== */
 
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap");
@@ -106,13 +106,11 @@ body {
 }
 
 @keyframes heartGlow {
-
   0%,
   100% {
     transform: scale(1);
     filter: brightness(1);
   }
-
   50% {
     transform: scale(1.2);
     filter: brightness(1.4) drop-shadow(0 0 30px rgba(232, 128, 127, 0.8));
@@ -137,12 +135,10 @@ body {
 }
 
 @keyframes fadeInOut {
-
   0%,
   100% {
     opacity: 0.3;
   }
-
   50% {
     opacity: 0.7;
   }
@@ -162,12 +158,10 @@ body {
 }
 
 @keyframes envelopeFloat {
-
   0%,
   100% {
     transform: translateY(0) rotate(-2deg);
   }
-
   50% {
     transform: translateY(-10px) rotate(2deg);
   }
@@ -266,12 +260,10 @@ body {
 }
 
 @keyframes badgeBounce {
-
   0%,
   100% {
     transform: translateY(0);
   }
-
   50% {
     transform: translateY(-8px);
   }
@@ -350,12 +342,10 @@ body {
 }
 
 @keyframes pulseBtn {
-
   0%,
   100% {
     box-shadow: 0 6px 25px var(--accent-glow);
   }
-
   50% {
     box-shadow: 0 6px 40px rgba(232, 128, 127, 0.6);
   }
@@ -376,6 +366,19 @@ body {
 }
 
 /* ==========================================
+   FOG OF WAR CANVAS
+   ========================================== */
+.fog-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 450;
+  pointer-events: none;
+  transition: opacity 1.5s ease;
+}
+
+/* ==========================================
    HUD
    ========================================== */
 .hud {
@@ -390,9 +393,10 @@ body {
   padding: env(safe-area-inset-top, 8px) 12px 8px;
   background: linear-gradient(180deg, rgba(253, 246, 240, 0.95) 0%, rgba(253, 246, 240, 0) 100%);
   pointer-events: none;
+  transition: opacity 0.8s ease;
 }
 
-.hud>* {
+.hud > * {
   pointer-events: auto;
 }
 
@@ -424,17 +428,9 @@ body {
 }
 
 @keyframes scorePop {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.25);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
 }
 
 .hud-heart {
@@ -468,6 +464,63 @@ body {
 }
 
 /* ==========================================
+   HINT PILL — "Sonraki: ..."
+   ========================================== */
+.hint-pill {
+  position: fixed;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 6px 16px;
+  border-radius: 50px;
+  box-shadow: var(--shadow);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text2);
+  white-space: nowrap;
+  animation: hintSlideIn 0.5s var(--bounce) both;
+  transition: opacity 0.8s ease;
+}
+
+.hint-pill.finale-hint {
+  background: linear-gradient(135deg, rgba(252, 228, 236, 0.95), rgba(243, 229, 245, 0.95));
+  color: var(--accent-dark);
+  font-weight: 600;
+  animation: hintSlideIn 0.5s var(--bounce) both, finaleHintGlow 2s ease-in-out infinite;
+}
+
+@keyframes hintSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes finaleHintGlow {
+  0%, 100% {
+    box-shadow: var(--shadow);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(232, 128, 127, 0.4);
+  }
+}
+
+.hint-icon {
+  font-size: 0.9rem;
+}
+
+/* ==========================================
    PROGRESS BAR
    ========================================== */
 .game-progress {
@@ -481,6 +534,7 @@ body {
   border-radius: 50px;
   overflow: hidden;
   pointer-events: none;
+  transition: opacity 0.8s ease;
 }
 
 .game-progress-fill {
@@ -496,7 +550,7 @@ body {
    ========================================== */
 .distance-badge {
   position: fixed;
-  top: 72px;
+  top: 80px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -524,13 +578,8 @@ body {
 }
 
 @keyframes hotPulse {
-  0% {
-    transform: scale(1);
-  }
-
-  100% {
-    transform: scale(1.3);
-  }
+  0% { transform: scale(1); }
+  100% { transform: scale(1.3); }
 }
 
 .warmth-label {
@@ -539,21 +588,10 @@ body {
   transition: color 0.3s;
 }
 
-.warmth-dot.hot+.warmth-label {
-  color: #e74c3c;
-}
-
-.warmth-dot.warm+.warmth-label {
-  color: #e67e22;
-}
-
-.warmth-dot.mild+.warmth-label {
-  color: #f1c40f;
-}
-
-.warmth-dot.cold+.warmth-label {
-  color: #3498db;
-}
+.warmth-dot.hot + .warmth-label { color: #e74c3c; }
+.warmth-dot.warm + .warmth-label { color: #e67e22; }
+.warmth-dot.mild + .warmth-label { color: #f1c40f; }
+.warmth-dot.cold + .warmth-label { color: #3498db; }
 
 .distance-sep {
   color: var(--muted);
@@ -571,7 +609,7 @@ body {
    ========================================== */
 .toast {
   position: fixed;
-  top: 100px;
+  top: 110px;
   left: 50%;
   transform: translateX(-50%) translateY(-20px);
   z-index: 1100;
@@ -616,13 +654,8 @@ body {
 }
 
 @keyframes flash {
-  0% {
-    opacity: 0.9;
-  }
-
-  100% {
-    opacity: 0;
-  }
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
 }
 
 /* ==========================================
@@ -641,12 +674,10 @@ body {
     opacity: 1;
     transform: translateY(0) translateX(0) scale(0.5);
   }
-
   30% {
     opacity: 1;
     transform: translateY(-30px) translateX(var(--dx, 0px)) scale(1.2);
   }
-
   100% {
     opacity: 0;
     transform: translateY(-100px) translateX(var(--dx, 0px)) scale(0.6);
@@ -685,27 +716,14 @@ body {
 }
 
 @keyframes charPulse {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.3);
-  }
-
-  100% {
-    transform: scale(1.15);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1.15); }
 }
 
 @keyframes charBob {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-
-  100% {
-    transform: translateY(-4px) scale(1.08);
-  }
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-4px) scale(1.08); }
 }
 
 /* ==========================================
@@ -733,13 +751,11 @@ body {
 }
 
 @keyframes mysteryPulse {
-
   0%,
   100% {
     transform: scale(1);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   }
-
   50% {
     transform: scale(1.1);
     box-shadow: 0 2px 20px rgba(212, 165, 116, 0.45);
@@ -753,18 +769,53 @@ body {
 }
 
 @keyframes discoveredPop {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.35); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Marker pop-in animation for newly unlocked markers */
+.memory-marker.marker-pop-in {
+  animation: markerPopIn 0.6s var(--bounce) both;
+}
+
+@keyframes markerPopIn {
   0% {
-    transform: scale(0.3);
     opacity: 0;
+    transform: scale(0.4);
   }
-
-  60% {
-    transform: scale(1.35);
-  }
-
-  100% {
-    transform: scale(1);
+  50% {
     opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Finale marker sparkle/glow */
+.finale-marker .marker-inner {
+  width: 44px;
+  height: 44px;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, rgba(252, 228, 236, 0.95), rgba(243, 229, 245, 0.95));
+  box-shadow: 0 0 20px rgba(232, 128, 127, 0.5), 0 0 40px rgba(232, 128, 127, 0.2);
+  animation: finaleMarkerGlow 2s ease-in-out infinite;
+}
+
+.finale-marker.finale-glow {
+  animation: finaleMarkerGlow 2s ease-in-out infinite;
+}
+
+@keyframes finaleMarkerGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(232, 128, 127, 0.4), 0 0 30px rgba(232, 128, 127, 0.15);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(232, 128, 127, 0.7), 0 0 50px rgba(232, 128, 127, 0.3);
+    transform: scale(1.1);
   }
 }
 
@@ -773,12 +824,10 @@ body {
 }
 
 @keyframes nearbyGlow {
-
   0%,
   100% {
     box-shadow: 0 0 8px var(--accent-glow);
   }
-
   50% {
     box-shadow: 0 0 25px var(--accent);
     transform: scale(1.15);
@@ -819,6 +868,107 @@ body {
 }
 
 /* ==========================================
+   SETTINGS (Gear icon + panel)
+   ========================================== */
+.settings-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 16px;
+  z-index: 1100;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--fast);
+  opacity: 0.7;
+}
+
+.settings-btn:hover,
+.settings-btn:active {
+  opacity: 1;
+  transform: scale(1.05) rotate(45deg);
+}
+
+.settings-panel {
+  position: fixed;
+  bottom: 68px;
+  right: 16px;
+  z-index: 1100;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 14px 16px;
+  min-width: 180px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px) scale(0.95);
+  transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+}
+
+.settings-panel.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.settings-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settings-reset-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #fce4ec, #f3e5f5);
+  color: var(--accent-dark);
+  border: 1px solid rgba(232, 128, 127, 0.2);
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--fast);
+  margin-bottom: 6px;
+}
+
+.settings-reset-btn:active {
+  transform: scale(0.97);
+  background: rgba(232, 128, 127, 0.2);
+}
+
+.settings-cancel-btn {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--fast);
+}
+
+.settings-cancel-btn:active {
+  background: var(--bg2);
+}
+
+/* ==========================================
    D-PAD
    ========================================== */
 .dpad {
@@ -833,6 +983,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  transition: opacity 0.8s ease;
 }
 
 .dpad-mid {
@@ -1092,166 +1243,182 @@ body {
 }
 
 /* ==========================================
-   SURPRISE BUTTON
+   FINALE OVERLAY
    ========================================== */
-.surpriz-container {
-  position: fixed;
-  bottom: 180px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1200;
-  display: none;
-}
-
-.surpriz-container.show {
-  display: block;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-.btn-surpriz {
-  padding: 0.9rem 2rem;
-  background: linear-gradient(135deg, var(--gold), var(--accent));
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-family: var(--font);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 25px rgba(212, 165, 116, 0.5);
-  transition: var(--bounce);
-  animation: pulseBtn 2s infinite;
-}
-
-.btn-surpriz:active {
-  transform: scale(0.95);
-}
-
-/* ==========================================
-   MODAL
-   ========================================== */
-.modal-overlay {
+.finale-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(61, 44, 46, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 3000;
+  z-index: 6000;
+  background: radial-gradient(ellipse at center, #2d1a25 0%, #1a0a0e 70%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  flex-direction: column;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.4s, visibility 0.4s;
+  transition: opacity 1.5s ease, visibility 1.5s ease;
 }
 
-.modal-overlay.show {
+.finale-overlay.show {
   opacity: 1;
   visibility: visible;
 }
 
-.modal {
-  background: var(--card);
-  border-radius: var(--radius-lg);
-  max-width: 440px;
-  width: 100%;
-  max-height: 85vh;
-  max-height: 85svh;
-  overflow-y: auto;
-  padding: 2rem 1.5rem;
-  text-align: center;
-  transform: scale(0.9) translateY(20px);
-  transition: transform 0.5s var(--bounce);
-  box-shadow: var(--shadow-lg);
-}
-
-.modal-overlay.show .modal {
-  transform: scale(1) translateY(0);
-}
-
-.modal-emoji {
-  font-size: 3rem;
-  margin-bottom: 0.6rem;
-  animation: heartGlow 1.5s infinite;
-}
-
-.modal h2 {
-  font-family: var(--font-d);
-  font-size: clamp(1.2rem, 4vw, 1.5rem);
-  color: var(--text);
-  margin-bottom: 1.25rem;
-}
-
-.modal-mesaj {
-  font-size: 0.9rem;
-  color: var(--text2);
-  line-height: 1.8;
-  text-align: left;
-  min-height: 80px;
-  white-space: pre-line;
-}
-
-.modal-mesaj .cursor {
-  display: inline-block;
-  width: 2px;
-  height: 1.1em;
-  background: var(--accent);
-  margin-left: 2px;
-  animation: blink 0.7s infinite;
-  vertical-align: text-bottom;
-}
-
-@keyframes blink {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0;
-  }
-}
-
-.modal-buttons {
-  margin-top: 1.25rem;
+.finale-world-bg {
+  position: absolute;
+  inset: 0;
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
   justify-content: center;
+  opacity: 0.6;
 }
 
-.btn-modal {
-  padding: 0.7rem 1.4rem;
+.world-svg {
+  width: 90%;
+  max-width: 700px;
+  height: auto;
+}
+
+.finale-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  max-width: 420px;
+  width: 100%;
+}
+
+.finale-text {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.finale-text.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.finale-heading {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  animation: heartGlow 2s ease-in-out infinite;
+}
+
+.finale-message {
+  font-family: var(--font-d);
+  font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  font-style: italic;
+}
+
+.finale-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 2.2rem;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  color: #fff;
+  border: none;
   border-radius: 50px;
   font-family: var(--font);
-  font-size: 0.88rem;
-  font-weight: 500;
+  font-size: 1.05rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: var(--fast);
-  border: none;
-  flex: 1;
-  max-width: 180px;
+  margin-top: 2rem;
+  box-shadow: 0 6px 25px var(--accent-glow);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  animation: pulseBtn 2s ease-in-out infinite;
 }
 
-.btn-modal.primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: #fff;
-  box-shadow: 0 4px 15px var(--accent-glow);
+.finale-btn.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.btn-modal.primary:active {
+.finale-btn:active {
   transform: scale(0.95);
 }
 
-.btn-modal.secondary {
-  background: var(--bg2);
-  color: var(--text2);
-  border: 1px solid var(--gold-light);
+.finale-skip {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  top: calc(env(safe-area-inset-top, 20px) + 8px);
+  z-index: 3;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.5s ease, color 0.3s;
+  padding: 8px 12px;
 }
 
-.btn-modal.secondary:active {
-  background: var(--gold-light);
+.finale-skip.show {
+  opacity: 1;
+}
+
+.finale-skip:hover,
+.finale-skip:active {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Finale Note Area */
+.finale-note-area {
+  margin-top: 1.5rem;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.finale-note-area.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.finale-note-content {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.finale-note-text {
+  font-family: var(--font-d);
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.9;
+  white-space: pre-line;
+}
+
+/* Heart particles for finale */
+.finale-heart-particle {
+  position: absolute;
+  bottom: -20px;
+  pointer-events: none;
+  animation: heartFloat linear forwards;
+  opacity: 0.7;
+}
+
+@keyframes heartFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) scale(1.2) rotate(20deg);
+  }
 }
 
 /* ==========================================
@@ -1272,7 +1439,6 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1299,12 +1465,13 @@ body {
     padding: 4px 10px;
   }
 
-  .sheet-body {
-    padding: 0.75rem 1rem 1.25rem;
+  .hint-pill {
+    font-size: 0.72rem;
+    padding: 5px 12px;
   }
 
-  .modal {
-    padding: 1.5rem 1.25rem;
+  .sheet-body {
+    padding: 0.75rem 1rem 1.25rem;
   }
 
   .step-content {
@@ -1313,6 +1480,12 @@ body {
 
   .mem-card {
     font-size: 1.3rem;
+  }
+
+  .settings-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
   }
 }
 

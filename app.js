@@ -1,6 +1,6 @@
 // ==========================================
 // Bizim Küçük Dünyamız 🌍💛
-// Valentine's Day Game — v5
+// Valentine's Day Game — v6 (Story Exploration)
 // ==========================================
 
 (function () {
@@ -12,19 +12,15 @@
 
     // ---------- Game State ----------
     let map, mapBounds, characterMarker;
-    let memoryMarkers = [];
-    let triggeredMemories = new Set();
-    let discoveredCount = 0;
-    let surpriseShown = false;
     let moveAnimation = null;
     let activeKeys = new Set();
     let keyMoveRAF = null;
     let lastMoveTime = 0;
     let trailPoints = [];
     let trailLine = null;
+    let finaleTriggered = false;
 
     const PROXIMITY_THRESHOLD = 500;
-    const NEARBY_THRESHOLD = 1500;
     const MIN_ZOOM = 12;
     const MAX_ZOOM = 18;
     const DEFAULT_ZOOM = 13;
@@ -43,15 +39,13 @@
     const sheet = document.getElementById("sheet");
     const sheetOverlay = document.getElementById("sheet-overlay");
     const sheetClose = document.getElementById("sheet-close");
-    const surprizContainer = document.getElementById("surpriz-container");
-    const surprizBtn = document.getElementById("btn-surpriz");
-    const modalOverlay = document.getElementById("modal-overlay");
-    const modalMesaj = document.getElementById("modal-mesaj");
-    const modalKapat = document.getElementById("modal-kapat");
-    const modalTekrar = document.getElementById("modal-tekrar");
-    const btnCompass = document.getElementById("btn-compass");
     const warmthDot = document.getElementById("warmth-dot");
     const warmthText = document.getElementById("warmth-label");
+    const hintPill = document.getElementById("hint-pill");
+    const hintText = document.getElementById("hint-text");
+
+    // Track the currently active (shown in sheet) location
+    let currentSheetLocId = null;
 
     // ==========================================
     //  INIT
@@ -65,12 +59,10 @@
     //  INTRO SYSTEM
     // ==========================================
     function setupIntro() {
-        // Step 1: Typewriter text, then clickable
         setTimeout(() => {
             typewriterIntro("step1-text", "Sana bir şey göstermek istiyorum...", 55);
         }, 600);
 
-        // Click handlers for each step
         document.getElementById("step-1").addEventListener("click", () => goToStep(2));
         document.getElementById("step-2").addEventListener("click", () => goToStep(3));
         document.getElementById("step-3").addEventListener("click", () => goToStep(4));
@@ -82,23 +74,16 @@
 
     function goToStep(step) {
         if (step <= currentStep) return;
-        // Hide current
         const prev = document.getElementById(`step-${currentStep}`);
         if (prev) prev.classList.remove("active");
-
         currentStep = step;
-
-        // Show next
         const next = document.getElementById(`step-${step}`);
         if (next) next.classList.add("active");
-
-        // Trigger step-specific animations
         if (step === 2) animateStep2();
         if (step === 3) animateStep3();
         if (step === 4) animateStep4();
     }
 
-    // --------- Step 2: Love Letter ---------
     function animateStep2() {
         const lines = document.querySelectorAll(".letter-line");
         lines.forEach((line, i) => {
@@ -107,7 +92,6 @@
         });
     }
 
-    // --------- Step 3: Memory Cards ---------
     function animateStep3() {
         const cards = document.querySelectorAll(".mem-card");
         cards.forEach((card, i) => {
@@ -115,7 +99,6 @@
         });
     }
 
-    // --------- Step 4: Mission Rules ---------
     function animateStep4() {
         const rules = document.querySelectorAll(".rule");
         rules.forEach((rule, i) => {
@@ -123,19 +106,14 @@
         });
     }
 
-    // --------- Typewriter for intro ---------
     function typewriterIntro(elementId, text, speed) {
         const el = document.getElementById(elementId);
         if (!el) return;
         el.textContent = "";
         let i = 0;
         const iv = setInterval(() => {
-            if (i < text.length) {
-                el.textContent += text[i];
-                i++;
-            } else {
-                clearInterval(iv);
-            }
+            if (i < text.length) { el.textContent += text[i]; i++; }
+            else clearInterval(iv);
         }, speed);
     }
 
@@ -143,26 +121,29 @@
     //  START GAME
     // ==========================================
     function startGame() {
-        // Hide all intro steps
         for (let i = 1; i <= totalSteps; i++) {
             const s = document.getElementById(`step-${i}`);
             if (s) s.classList.remove("active");
         }
 
-        // Show game
         const game = document.getElementById("game");
         game.style.display = "block";
         document.body.style.background = "#fdf6f0";
 
-        // Slight delay for transition
         setTimeout(() => {
+            // Load progress
+            progressStore.load(locations);
+
             setupMap();
             setupEventListeners();
             setupKeyboard();
             setupDpad();
             setupSheetGestures();
             setupLightbox();
+            setupSettings();
             updateScore();
+            updateHintPill();
+
             setTimeout(() => showToast("💡", "Haritaya dokun veya yön tuşlarını kullan!"), 600);
         }, 100);
     }
@@ -188,7 +169,7 @@
                 this.vy = -(Math.random() * 0.4 + 0.1);
                 this.vx = (Math.random() - 0.5) * 0.4;
                 this.o = Math.random() * 0.6 + 0.1;
-                this.h = [0, 330, 350, 15][Math.floor(Math.random() * 4)]; // pinks/reds
+                this.h = [0, 330, 350, 15][Math.floor(Math.random() * 4)];
             }
             update() {
                 this.y += this.vy; this.x += this.vx; this.o -= 0.0008;
@@ -219,7 +200,7 @@
     //  MAP SETUP
     // ==========================================
     function setupMap() {
-        const pointBounds = L.latLngBounds(anilar.map(a => [a.lat, a.lng]));
+        const pointBounds = L.latLngBounds(locations.map(a => [a.x, a.y]));
         const paddedBounds = pointBounds.pad(0.3);
         mapBounds = paddedBounds;
 
@@ -238,9 +219,24 @@
         }).addTo(map);
 
         map.fitBounds(pointBounds.pad(0.15));
-        addMemoryMarkers();
+
+        // Marker manager: only shows unlocked markers
+        markerManager.init(map, locations);
+
+        // Character
         const c = pointBounds.getCenter();
         addCharacterMarker(c.lat, c.lng);
+
+        // Fog overlay
+        fogOverlay.init(map);
+        fogOverlay.restoreFromViewed(locations);
+        fogOverlay.updateAvatar(characterMarker.getLatLng());
+
+        // Check if all viewed → spawn finale
+        if (progressStore.isAllViewed(locations) && !finaleTriggered) {
+            markerManager.spawnFinaleMarker(finaleLocation);
+        }
+
         map.on("click", onMapTap);
     }
 
@@ -282,17 +278,30 @@
     }
 
     // ==========================================
-    //  WARMTH
+    //  WARMTH — only tracks next unlocked, unviewed marker
     // ==========================================
     function updateWarmth(charLL) {
+        const allMarkers = markerManager.getMarkers();
         let closestDist = Infinity, closest = null;
-        memoryMarkers.forEach(m => {
-            if (triggeredMemories.has(m._aniData.id)) return;
+
+        allMarkers.forEach(m => {
+            const loc = m._locData;
+            if (progressStore.isViewed(loc.id)) return;
             const d = charLL.distanceTo(m.getLatLng());
             if (d < closestDist) { closestDist = d; closest = m; }
         });
 
-        if (closestDist === Infinity) { if (distanceBadge) distanceBadge.style.opacity = "0"; return; }
+        // Also check finale marker
+        const finaleM = markerManager.getFinaleMarker();
+        if (finaleM) {
+            const d = charLL.distanceTo(finaleM.getLatLng());
+            if (d < closestDist) { closestDist = d; closest = finaleM; }
+        }
+
+        if (closestDist === Infinity) {
+            if (distanceBadge) distanceBadge.style.opacity = "0";
+            return;
+        }
 
         const warmth = Math.max(0, Math.min(1, 1 - closestDist / 5000));
         const m = Math.round(closestDist);
@@ -342,7 +351,7 @@
     //  TAP-TO-MOVE
     // ==========================================
     function onMapTap(e) {
-        if (sheet.classList.contains("show") || modalOverlay.classList.contains("show")) return;
+        if (sheet.classList.contains("show")) return;
         moveCharacterTo(clampToBounds(e.latlng));
     }
 
@@ -365,8 +374,8 @@
             smoothCamera(pos);
             updateTrail(pos);
             checkProximity(pos);
-            updateNearbyGlow(pos);
             updateWarmth(pos);
+            fogOverlay.updateAvatar(pos);
 
             if (t < 1) moveAnimation = requestAnimationFrame(step);
             else { moveAnimation = null; setCharacterMoving(false); }
@@ -418,7 +427,7 @@
     }
 
     // ==========================================
-    //  CONTINUOUS MOVE (rAF + sync delta)
+    //  CONTINUOUS MOVE
     // ==========================================
     const dirMap = {
         "arrowup": [1, 0], "w": [1, 0], "dpad-up": [1, 0],
@@ -457,8 +466,8 @@
 
             if (now - (tick._lt || 0) > 150) { updateTrail(newLL); tick._lt = now; }
             checkProximity(newLL);
-            updateNearbyGlow(newLL);
             updateWarmth(newLL);
+            fogOverlay.updateAvatar(newLL);
             keyMoveRAF = requestAnimationFrame(tick);
         }
         keyMoveRAF = requestAnimationFrame(tick);
@@ -482,21 +491,6 @@
     }
 
     // ==========================================
-    //  MEMORY MARKERS
-    // ==========================================
-    function addMemoryMarkers() {
-        anilar.forEach(ani => {
-            const marker = L.marker([ani.lat, ani.lng], {
-                icon: L.divIcon({ className: "memory-marker undiscovered", html: '<span class="marker-inner">❓</span>', iconSize: [38, 38], iconAnchor: [19, 19] }),
-                interactive: false,
-            }).addTo(map);
-            marker.bindPopup(`<div class="popup-content"><h3>${ani.baslik}</h3>${ani.tarih ? `<div class="popup-date">📅 ${ani.tarih}</div>` : ""}</div>`, { closeButton: true, maxWidth: 200, autoPan: false });
-            marker._aniData = ani;
-            memoryMarkers.push(marker);
-        });
-    }
-
-    // ==========================================
     //  CHARACTER MARKER — 💖
     // ==========================================
     function addCharacterMarker(lat, lng) {
@@ -517,50 +511,69 @@
         characterMarker.on("drag", e => {
             const ll = clampToBounds(e.target.getLatLng());
             e.target.setLatLng(ll); smoothCamera(ll);
-            checkProximity(ll); updateNearbyGlow(ll); updateWarmth(ll);
+            checkProximity(ll); updateWarmth(ll);
+            fogOverlay.updateAvatar(ll);
         });
         characterMarker.on("dragend", () => { map.dragging.enable(); setCharacterMoving(false); });
     }
 
     // ==========================================
-    //  PROXIMITY
+    //  PROXIMITY — Sequential unlock logic
     // ==========================================
     function checkProximity(charLL) {
-        memoryMarkers.forEach(marker => {
-            const ani = marker._aniData;
-            if (charLL.distanceTo(marker.getLatLng()) < PROXIMITY_THRESHOLD && !triggeredMemories.has(ani.id)) {
-                triggeredMemories.add(ani.id);
-                discoveredCount++;
-                const emoji = ani.surpriz ? "✨" : ["📍", "🌅", "🎨", "🎭", "🏰", "💫"][ani.id % 6];
-                marker.setIcon(L.divIcon({ className: "memory-marker discovered", html: `<span class="marker-inner">${emoji}</span>`, iconSize: [38, 38], iconAnchor: [19, 19] }));
-                marker.openPopup();
-                flashScreen(); updateScore();
-                spawnFloatingEmojis(marker.getLatLng(), 6);
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-                if (ani.surpriz) { showToast("✨", "Sürpriz noktasını buldun!"); showSurpriseButton(); }
-                else { showToast("💕", `"${ani.baslik}" keşfedildi!`); setTimeout(() => showSheet(ani), 400); }
-                if (discoveredCount === anilar.length) setTimeout(() => launchConfetti(), 600);
+        // Check regular markers (only unlocked, unviewed)
+        const allMarkers = markerManager.getMarkers();
+        allMarkers.forEach(marker => {
+            const loc = marker._locData;
+            if (progressStore.isViewed(loc.id)) return;
+            if (charLL.distanceTo(marker.getLatLng()) < PROXIMITY_THRESHOLD) {
+                onLocationDiscovered(loc, marker);
             }
         });
+
+        // Check finale marker
+        const finaleM = markerManager.getFinaleMarker();
+        if (finaleM && !finaleTriggered) {
+            if (charLL.distanceTo(finaleM.getLatLng()) < PROXIMITY_THRESHOLD) {
+                finaleTriggered = true;
+                finaleSequence.trigger(map);
+            }
+        }
     }
 
-    function updateNearbyGlow(charLL) {
-        memoryMarkers.forEach(m => {
-            if (triggeredMemories.has(m._aniData.id)) return;
-            const el = m.getElement();
-            if (!el) return;
-            if (charLL.distanceTo(m.getLatLng()) < NEARBY_THRESHOLD) el.classList.add("nearby");
-            else el.classList.remove("nearby");
-        });
+    /**
+     * When the avatar reaches an unlocked marker
+     */
+    function onLocationDiscovered(loc, marker) {
+        // Mark as viewed immediately
+        progressStore.markViewed(loc.id);
+        markerManager.markDiscovered(loc.id);
+
+        // Reveal fog at this location
+        fogOverlay.addRevealedLocation(loc.x, loc.y);
+
+        // Visual feedback
+        marker.openPopup();
+        flashScreen();
+        updateScore();
+        spawnFloatingEmojis(marker.getLatLng(), 6);
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+        const emoji = ["📍", "🌅", "🎨", "🎭", "🏰"][loc.order - 1] || "💫";
+        showToast(emoji, `"${loc.title}" keşfedildi!`);
+
+        // Show memory sheet
+        currentSheetLocId = loc.id;
+        setTimeout(() => showSheet(loc), 400);
     }
 
     // ==========================================
     //  UI HELPERS
     // ==========================================
     function updateScore() {
-        scoreText.textContent = `${discoveredCount} / ${anilar.length}`;
-        progressFill.style.width = Math.round((discoveredCount / anilar.length) * 100) + "%";
+        const viewed = progressStore.getState().viewedIds.length;
+        scoreText.textContent = `${viewed} / ${locations.length}`;
+        progressFill.style.width = Math.round((viewed / locations.length) * 100) + "%";
         const hud = document.getElementById("hud-score");
         if (hud) { hud.classList.add("pop"); setTimeout(() => hud.classList.remove("pop"), 400); }
     }
@@ -580,21 +593,129 @@
         setTimeout(() => discoveryFlash.classList.remove("show"), 700);
     }
 
-    function showSheet(ani) {
-        document.getElementById("ak-baslik").textContent = ani.baslik;
-        const de = document.getElementById("ak-tarih"), fe = document.getElementById("ak-foto"), pe = document.getElementById("ak-placeholder");
-        if (ani.tarih) { de.textContent = `📅 ${ani.tarih}`; de.style.display = "block"; } else de.style.display = "none";
-        if (ani.foto) { fe.src = `assets/${ani.foto}`; fe.alt = ani.baslik; fe.style.display = "block"; pe.style.display = "none"; }
-        else { fe.src = "assets/placeholder.jpeg"; fe.alt = ani.baslik; fe.style.display = "block"; pe.style.display = "none"; }
-        document.getElementById("ak-metin").textContent = ani.metin;
+    function showSheet(loc) {
+        document.getElementById("ak-baslik").textContent = loc.title;
+        const de = document.getElementById("ak-tarih");
+        const fe = document.getElementById("ak-foto");
+        const pe = document.getElementById("ak-placeholder");
+
+        if (loc.date) { de.textContent = `📅 ${loc.date}`; de.style.display = "block"; }
+        else de.style.display = "none";
+
+        if (loc.photoUrl) {
+            fe.src = `assets/${loc.photoUrl}`;
+            fe.alt = loc.title;
+            fe.style.display = "block";
+            pe.style.display = "none";
+        } else {
+            fe.src = "assets/placeholder.jpeg";
+            fe.alt = loc.title;
+            fe.style.display = "block";
+            pe.style.display = "none";
+        }
+
+        document.getElementById("ak-metin").textContent = loc.description;
         sheet.classList.remove("expanded");
-        sheet.classList.add("show"); sheetOverlay.classList.add("show");
+        sheet.classList.add("show");
+        sheetOverlay.classList.add("show");
     }
 
     function hideSheet() {
+        const wasShowing = sheet.classList.contains("show");
         sheet.classList.remove("show", "expanded");
         sheetOverlay.classList.remove("show");
         sheet.style.transform = "";
+
+        // On close: unlock next marker
+        if (wasShowing && currentSheetLocId) {
+            const closedId = currentSheetLocId;
+            currentSheetLocId = null;
+
+            // Check if all locations are now viewed
+            if (progressStore.isAllViewed(locations)) {
+                // Spawn finale marker
+                if (!markerManager.getFinaleMarker()) {
+                    setTimeout(() => {
+                        markerManager.spawnFinaleMarker(finaleLocation);
+                        updateHintPill();
+                        showToast("✨", "Finale noktası belirlendi!");
+                    }, 500);
+                }
+            } else {
+                // Unlock the next location
+                const nextLoc = progressStore.unlockNext(locations);
+                if (nextLoc) {
+                    setTimeout(() => {
+                        markerManager.unlockNextMarker(nextLoc);
+                        updateHintPill();
+                        showToast("🗺️", `Yeni nokta: "${nextLoc.title}"`);
+                    }, 400);
+                }
+            }
+        }
+    }
+
+    // ==========================================
+    //  HINT PILL — "Next: {title}"
+    // ==========================================
+    function updateHintPill() {
+        if (!hintPill || !hintText) return;
+
+        const state = progressStore.getState();
+
+        if (progressStore.isAllViewed(locations)) {
+            if (finaleTriggered) {
+                hintPill.style.display = "none";
+            } else {
+                hintText.textContent = "✨ Finale noktasına git!";
+                hintPill.classList.add("finale-hint");
+                hintPill.style.display = "flex";
+            }
+            return;
+        }
+
+        // Find next unviewed location that is unlocked
+        const sorted = [...locations].sort((a, b) => a.order - b.order);
+        const next = sorted.find(l => progressStore.isUnlocked(l.id) && !progressStore.isViewed(l.id));
+
+        if (next) {
+            hintText.textContent = `Sonraki: ${next.title}`;
+            hintPill.classList.remove("finale-hint");
+            hintPill.style.display = "flex";
+        } else {
+            hintPill.style.display = "none";
+        }
+    }
+
+    // ==========================================
+    //  SETTINGS (Reset Progress)
+    // ==========================================
+    function setupSettings() {
+        const btn = document.getElementById("settings-btn");
+        const panel = document.getElementById("settings-panel");
+        const resetBtn = document.getElementById("reset-progress-btn");
+        const cancelBtn = document.getElementById("reset-cancel-btn");
+
+        if (!btn || !panel) return;
+
+        btn.addEventListener("click", () => {
+            panel.classList.toggle("show");
+        });
+
+        if (resetBtn) {
+            resetBtn.addEventListener("click", () => {
+                progressStore.reset();
+                panel.classList.remove("show");
+                // Reload the page to restart cleanly
+                window.location.reload();
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener("click", () => {
+                panel.classList.remove("show");
+            });
+        }
     }
 
     // ==========================================
@@ -607,7 +728,6 @@
         let startY = 0, currentY = 0, isDragging = false;
 
         function onStart(e) {
-            // Eğer scroll varsa ve yukarıda değilsek, gesture başlatma
             if (sheet.scrollTop > 5 && sheet.classList.contains("expanded")) return;
             isDragging = true;
             startY = (e.touches ? e.touches[0] : e).clientY;
@@ -619,12 +739,9 @@
             if (!isDragging) return;
             currentY = (e.touches ? e.touches[0] : e).clientY;
             const dy = currentY - startY;
-
             if (dy > 0) {
-                // Aşağı sürükleme — kapatma
                 sheet.style.transform = `translateY(${dy}px)`;
             } else {
-                // Yukarı sürükleme — genişletme
                 const resistance = Math.abs(dy) * 0.5;
                 sheet.style.transform = `translateY(${-resistance}px)`;
             }
@@ -635,24 +752,13 @@
             isDragging = false;
             sheet.classList.remove("dragging");
             const dy = currentY - startY;
-
-            if (dy > 60) {
-                // Aşağı çekildi → kapat
-                hideSheet();
-            } else if (dy < -30) {
-                // Yukarı çekildi → genişlet
-                sheet.style.transform = "";
-                sheet.classList.add("expanded");
-            } else {
-                // Yetersiz → eski konuma dön
-                sheet.style.transform = "";
-            }
+            if (dy > 60) { hideSheet(); }
+            else if (dy < -30) { sheet.style.transform = ""; sheet.classList.add("expanded"); }
+            else { sheet.style.transform = ""; }
         }
 
-        // Handle + sheet body gesture
         [handle, sheet].forEach(el => {
             el.addEventListener("touchstart", e => {
-                // Sheet body'den sadece scroll en üstteyse başlat
                 if (el === sheet && sheet.scrollTop > 5) return;
                 onStart(e);
             }, { passive: true });
@@ -661,8 +767,6 @@
         document.addEventListener("touchmove", e => { if (isDragging) onMove(e); }, { passive: true });
         document.addEventListener("touchend", onEnd);
         document.addEventListener("touchcancel", onEnd);
-
-        // Mouse (desktop)
         handle.addEventListener("mousedown", onStart);
         document.addEventListener("mousemove", e => { if (isDragging) onMove(e); });
         document.addEventListener("mouseup", onEnd);
@@ -676,15 +780,12 @@
     const lightboxClose = document.getElementById("lightbox-close");
 
     function setupLightbox() {
-        // Fotoğrafa tıkla → fullscreen aç
         document.getElementById("ak-foto").addEventListener("click", () => {
             const src = document.getElementById("ak-foto").src;
             if (!src) return;
             lightboxImg.src = src;
             lightbox.classList.add("show");
         });
-
-        // Kapat
         lightboxClose.addEventListener("click", closeLightbox);
         lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
     }
@@ -693,32 +794,31 @@
         lightbox.classList.remove("show");
     }
 
-    function showSurpriseButton() { if (!surpriseShown) surprizContainer.classList.add("show"); }
-
-    function openSurpriseModal() {
-        surpriseShown = true; surprizContainer.classList.remove("show"); hideSheet();
-        modalOverlay.classList.add("show"); typewriterModal(finalMesaj);
-    }
-    function closeSurpriseModal() { modalOverlay.classList.remove("show"); }
-
-    let twInt;
-    function typewriterModal(text) {
-        modalMesaj.innerHTML = '<span class="cursor"></span>';
-        let i = 0;
-        if (twInt) clearInterval(twInt);
-        twInt = setInterval(() => {
-            if (i < text.length) { const c = modalMesaj.querySelector(".cursor"); if (c) c.insertAdjacentText("beforebegin", text[i]); i++; }
-            else { clearInterval(twInt); setTimeout(() => { const c = modalMesaj.querySelector(".cursor"); if (c) c.remove(); }, 2000); }
-        }, 40);
-    }
-
     function flyToNearest() {
         if (!characterMarker) return;
         const cLL = characterMarker.getLatLng();
         let closest = null, cd = Infinity;
-        memoryMarkers.forEach(m => { if (triggeredMemories.has(m._aniData.id)) return; const d = cLL.distanceTo(m.getLatLng()); if (d < cd) { cd = d; closest = m; } });
-        if (closest) { map.flyTo(closest.getLatLng(), 14, { duration: 0.8 }); showToast("🧭", "O tarafa git!"); }
-        else showToast("🎉", "Tüm anıları buldun!");
+
+        // Check unlocked unviewed markers
+        markerManager.getMarkers().forEach(m => {
+            if (progressStore.isViewed(m._locData.id)) return;
+            const d = cLL.distanceTo(m.getLatLng());
+            if (d < cd) { cd = d; closest = m; }
+        });
+
+        // Check finale marker
+        const finaleM = markerManager.getFinaleMarker();
+        if (finaleM && !finaleTriggered) {
+            const d = cLL.distanceTo(finaleM.getLatLng());
+            if (d < cd) { cd = d; closest = finaleM; }
+        }
+
+        if (closest) {
+            map.flyTo(closest.getLatLng(), 14, { duration: 0.8 });
+            showToast("🧭", "O tarafa git!");
+        } else {
+            showToast("🎉", "Tüm anıları buldun!");
+        }
     }
 
     // ==========================================
@@ -760,7 +860,6 @@
             frame++;
             if (alive > 0) requestAnimationFrame(draw);
         })();
-        showToast("🎉", "Tüm anıları keşfettin! Tebrikler!");
     }
 
     // ==========================================
@@ -769,12 +868,19 @@
     function setupEventListeners() {
         sheetClose.addEventListener("click", hideSheet);
         sheetOverlay.addEventListener("click", hideSheet);
-        surprizBtn.addEventListener("click", openSurpriseModal);
-        modalKapat.addEventListener("click", closeSurpriseModal);
-        modalTekrar.addEventListener("click", () => typewriterModal(finalMesaj));
-        modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) closeSurpriseModal(); });
-        btnCompass.addEventListener("click", flyToNearest);
-        document.addEventListener("keydown", e => { if (e.key === "Escape") { closeLightbox(); closeSurpriseModal(); hideSheet(); } });
+        const btnCompass = document.getElementById("btn-compass");
+        if (btnCompass) btnCompass.addEventListener("click", flyToNearest);
+
+        // Finale overlay events
+        const finaleSkip = document.getElementById("finale-skip-btn");
+        if (finaleSkip) finaleSkip.addEventListener("click", () => finaleSequence.skip());
+
+        const finaleBtn = document.getElementById("finale-continue-btn");
+        if (finaleBtn) finaleBtn.addEventListener("click", () => finaleSequence.revealNote());
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape") { closeLightbox(); hideSheet(); }
+        });
     }
 
     // ---------- Start ----------

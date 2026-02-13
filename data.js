@@ -10,76 +10,84 @@ const config = {
 
 // ==========================================
 // 📍 ANI NOKTALARI (Tümü İstanbul)
-// Her anı için: baslik, tarih, metin, lat, lng, foto
-// Foto opsiyoneldir — yoksa null yazın
+// Her anı için: id, baslik, tarih, metin, lat, lng, foto, order
+//   - order: Keşif sırası (1 = ilk açılacak)
+//   - Foto opsiyoneldir — yoksa null yazın
+//   - Sırayı değiştirmek için order değerlerini güncelleyin
 // ==========================================
-const anilar = [
+const locations = [
     {
-        id: 1,
-        baslik: "İlk Tanıştığımız Gün ☕",
-        tarih: "14 Şubat 2023",
-        metin:
+        id: "ilk-tanisma",
+        title: "İlk Tanıştığımız Gün ☕",
+        photoUrl: null,
+        description:
             "O gün bir kafede tesadüfen karşılaştık. Sen kahveni alırken gözlerimiz buluştu ve dünya bir an durdu. O andan itibaren her şey değişti.",
-        lat: 41.0369,
-        lng: 28.985,
-        foto: null,
+        date: "14 Şubat 2023",
+        x: 41.0369,
+        y: 28.985,
+        order: 1,
     },
     {
-        id: 2,
-        baslik: "Boğaz'da İlk Yürüyüşümüz 🌅",
-        tarih: "3 Mart 2023",
-        metin:
+        id: "bogaz-yuruyusu",
+        title: "Boğaz'da İlk Yürüyüşümüz 🌅",
+        photoUrl: null,
+        description:
             "Bebek sahilinde yürürken güneş batıyordu. Ellerini ilk kez tuttum ve kalbimin ne kadar hızlı attığını hissettim. O an sonsuza kadar sürsün istedim.",
-        lat: 41.0797,
-        lng: 29.0451,
-        foto: null,
+        date: "3 Mart 2023",
+        x: 41.0797,
+        y: 29.0451,
+        order: 2,
     },
     {
-        id: 3,
-        baslik: "Balat'ta Renkli Sokaklar 🎨",
-        tarih: "15 Haziran 2023",
-        metin:
+        id: "balat-sokaklar",
+        title: "Balat'ta Renkli Sokaklar 🎨",
+        photoUrl: null,
+        description:
             "Balat'ın renkli sokaklarında saatlerce kayboldum seninle. Her köşe başı yeni bir sürprizdi. Kahvemizi yudumlarken dünya sadece ikimize aitti.",
-        lat: 41.0295,
-        lng: 28.9487,
-        foto: null,
+        date: "15 Haziran 2023",
+        x: 41.0295,
+        y: 28.9487,
+        order: 3,
     },
     {
-        id: 4,
-        baslik: "Kadıköy Sokaklarında Kaybolmak 🎭",
-        tarih: "20 Ağustos 2023",
-        metin:
+        id: "kadikoy-sokaklar",
+        title: "Kadıköy Sokaklarında Kaybolmak 🎭",
+        photoUrl: null,
+        description:
             "Kadıköy'ün renkli sokaklarında saatlerce yürüdük. Sokak müzisyenlerini dinledik, vintage dükkanları keşfettik. Seninle kaybolmak bile bir macera.",
-        lat: 40.9903,
-        lng: 29.0244,
-        foto: null,
+        date: "20 Ağustos 2023",
+        x: 40.9903,
+        y: 29.0244,
+        order: 4,
     },
     {
-        id: 5,
-        baslik: "Kız Kulesi Manzarası 🏰",
-        tarih: "1 Ocak 2024",
-        metin:
+        id: "kiz-kulesi",
+        title: "Kız Kulesi Manzarası 🏰",
+        photoUrl: null,
+        description:
             "Yeni yılı Üsküdar sahilinde karşıladık. Kız Kulesi'nin ışıkları suya yansırken yeni bir yılın ilk dakikalarını birlikte yaşadık. En güzel başlangıçtı.",
-        lat: 41.0211,
-        lng: 29.004,
-        foto: null,
-    },
-    {
-        id: 6,
-        baslik: "Gelecekte Gideceğimiz Yer ✨",
-        tarih: null,
-        metin:
-            "Burası bizim geleceğimiz. Birlikte keşfedeceğimiz yerler, yaşayacağımız anılar ve yazacağımız hikayeler... Hepsi burada başlıyor.",
-        lat: 41.0586,
-        lng: 29.0337,
-        foto: null,
-        surpriz: true,
+        date: "1 Ocak 2024",
+        x: 41.0211,
+        y: 29.004,
+        order: 5,
     },
 ];
 
 // ==========================================
+// 🌟 FİNAL NOKTASI
+// Tüm anılar keşfedildikten sonra ortaya çıkar
+// Koordinatları değiştirmek için x ve y değerlerini güncelleyin
+// ==========================================
+const finaleLocation = {
+    id: "finale",
+    title: "Son Durak ✨",
+    x: 41.0586,
+    y: 29.0337,
+};
+
+// ==========================================
 // 💌 FİNAL MESAJI
-// Sürpriz noktasında typewriter efektiyle gösterilir
+// Dünya haritası sahnesinde gösterilir
 // ==========================================
 const finalMesaj = `Damla, seni tanıdığım günden beri hayatım bambaşka bir anlam kazandı. Seninle geçirdiğim her an, bir hazine gibi kalbimde saklı. Gülüşün en kötü günlerimi bile aydınlatıyor, varlığın bana huzur veriyor.
 

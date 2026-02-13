@@ -74,8 +74,8 @@
         <div class="mission-rules">
           <div class="rule"><span class="rule-icon">🗺️</span><span>Haritaya dokunarak ilerle</span></div>
           <div class="rule"><span class="rule-icon">🎮</span><span>Yön tuşlarıyla kontrol et</span></div>
-          <div class="rule"><span class="rule-icon">❓</span><span>Gizli anıları bul</span></div>
-          <div class="rule"><span class="rule-icon">🔥</span><span>Sıcak/soğuk ipucunu takip et</span></div>
+          <div class="rule"><span class="rule-icon">❓</span><span>Gizli anıları sırayla keşfet</span></div>
+          <div class="rule"><span class="rule-icon">🌫️</span><span>Sisi aç, hikayeni oluştur</span></div>
         </div>
         <button class="btn-start" id="btn-start">Hazırım, Başla! 💖</button>
       </div>
@@ -87,12 +87,15 @@
     <div class="game" id="game" style="display:none;">
       <div id="map"></div>
 
+      <!-- Fog of War Canvas -->
+      <canvas id="fog-canvas" class="fog-canvas"></canvas>
+
       <!-- HUD -->
       <div class="hud">
         <div class="hud-left">
           <div class="hud-score" id="hud-score">
             <span class="hud-heart">💕</span>
-            <span id="score-text">0 / 6</span>
+            <span id="score-text">0 / 5</span>
           </div>
         </div>
         <div class="hud-center">
@@ -101,6 +104,12 @@
         <div class="hud-right">
           <button class="hud-btn" id="btn-compass" title="En yakın anıya git">🧭</button>
         </div>
+      </div>
+
+      <!-- Hint Pill -->
+      <div class="hint-pill" id="hint-pill">
+        <span class="hint-icon">🗺️</span>
+        <span class="hint-text" id="hint-text">Sonraki: ...</span>
       </div>
 
       <!-- Progress Bar -->
@@ -125,6 +134,14 @@
 
       <!-- Discovery Flash -->
       <div class="discovery-flash" id="discovery-flash"></div>
+
+      <!-- Settings Gear -->
+      <button class="settings-btn" id="settings-btn" title="Ayarlar">⚙️</button>
+      <div class="settings-panel" id="settings-panel">
+        <p class="settings-title">Ayarlar</p>
+        <button class="settings-reset-btn" id="reset-progress-btn">İlerlemeyi Sıfırla 🔄</button>
+        <button class="settings-cancel-btn" id="reset-cancel-btn">İptal</button>
+      </div>
 
       <!-- D-Pad -->
       <div class="dpad" id="dpad">
@@ -161,23 +178,59 @@
     </div>
 
     <!-- ==========================================
-         SURPRISE BUTTON
+         FINALE OVERLAY
          ========================================== -->
-    <div class="surpriz-container" id="surpriz-container">
-      <button class="btn-surpriz" id="btn-surpriz">Sürprizi Aç 💌</button>
-    </div>
+    <div class="finale-overlay" id="finale-overlay">
+      <!-- World Map SVG Background -->
+      <div class="finale-world-bg">
+        <svg class="world-svg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+          <!-- Simplified world continents in pastel -->
+          <ellipse cx="500" cy="250" rx="480" ry="230" fill="none" stroke="rgba(232,128,127,0.15)" stroke-width="2"/>
+          <!-- North America -->
+          <path d="M150,120 Q170,90 220,85 Q260,80 280,100 Q300,120 290,150 Q280,180 250,200 Q220,220 190,210 Q160,200 140,170 Q130,150 150,120Z" fill="rgba(252,228,236,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
+          <!-- South America -->
+          <path d="M240,250 Q260,230 280,240 Q300,260 290,300 Q280,340 260,370 Q240,390 230,360 Q220,330 225,290 Q230,260 240,250Z" fill="rgba(243,229,245,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
+          <!-- Europe -->
+          <path d="M440,100 Q460,80 490,90 Q510,100 520,120 Q530,140 510,155 Q490,165 470,160 Q450,150 440,130 Q435,115 440,100Z" fill="rgba(255,243,224,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
+          <!-- Africa -->
+          <path d="M460,180 Q480,160 510,170 Q530,190 535,230 Q540,270 530,310 Q510,340 490,350 Q470,340 460,310 Q450,270 455,230 Q458,200 460,180Z" fill="rgba(252,228,236,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
+          <!-- Asia -->
+          <path d="M540,80 Q580,60 640,70 Q700,80 740,100 Q770,120 760,160 Q740,190 700,200 Q660,210 620,200 Q580,190 560,160 Q540,130 535,105 Q535,90 540,80Z" fill="rgba(243,229,245,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
+          <!-- Australia -->
+          <path d="M720,300 Q750,280 780,290 Q800,310 790,340 Q770,360 740,350 Q720,340 715,320 Q715,305 720,300Z" fill="rgba(255,243,224,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
+          <!-- Heart pin on Istanbul -->
+          <g transform="translate(495,130)">
+            <circle cx="0" cy="0" r="6" fill="rgba(232,128,127,0.8)">
+              <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="0" cy="0" r="12" fill="none" stroke="rgba(232,128,127,0.3)" stroke-width="1">
+              <animate attributeName="r" values="12;18;12" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <!-- Dotted connections between continents -->
+          <line x1="280" y1="150" x2="440" y2="120" stroke="rgba(232,128,127,0.15)" stroke-width="1" stroke-dasharray="4,6"/>
+          <line x1="510" y1="155" x2="540" y2="120" stroke="rgba(232,128,127,0.15)" stroke-width="1" stroke-dasharray="4,6"/>
+          <line x1="700" y1="200" x2="720" y2="300" stroke="rgba(232,128,127,0.15)" stroke-width="1" stroke-dasharray="4,6"/>
+        </svg>
+      </div>
 
-    <!-- ==========================================
-         SURPRISE MODAL
-         ========================================== -->
-    <div class="modal-overlay" id="modal-overlay">
-      <div class="modal">
-        <div class="modal-emoji">💌</div>
-        <h2>Sana Bir Şey Söylemek İstiyorum</h2>
-        <div class="modal-mesaj" id="modal-mesaj"></div>
-        <div class="modal-buttons">
-          <button class="btn-modal secondary" id="modal-tekrar">Tekrar Oku 🔄</button>
-          <button class="btn-modal primary" id="modal-kapat">Kapat 💛</button>
+      <!-- Skip button -->
+      <button class="finale-skip" id="finale-skip-btn">Atla →</button>
+
+      <!-- Final text -->
+      <div class="finale-content">
+        <div class="finale-text">
+          <h2 class="finale-heading">🌍</h2>
+          <p class="finale-message">Daha birlikte keşfedecek çok yerimiz var.</p>
+        </div>
+        <button class="finale-btn" id="finale-continue-btn">Devam edelim mi? 💛</button>
+
+        <!-- Sweet note area (hidden until button click) -->
+        <div class="finale-note-area" id="finale-note-area">
+          <div class="finale-note-content">
+            <p class="finale-note-text" id="finale-note-text"></p>
+          </div>
         </div>
       </div>
     </div>
@@ -189,6 +242,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="data.js"></script>
+    <script src="progressStore.js"></script>
+    <script src="markerManager.js"></script>
+    <script src="fogOverlay.js"></script>
+    <script src="finaleSequence.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
