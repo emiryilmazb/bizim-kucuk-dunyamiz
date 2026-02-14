@@ -149,6 +149,18 @@ const locations = [
         y: 29.1257523,
         order: 2,
     },
+    {
+        id: "camlica-kulesi",
+        title: "Çamlıca Kulesi'nde Kraliçem 👑",
+        photoUrls: [
+            "camlica/photo_2026-02-14_12-35-27.jpg",
+        ],
+        description:
+            "Özel bir günü kutlamak için gündüz vakti Çamlıca Kulesi'ne gitmiştik. Kuledeki kral ve kraliçe tahtına benzeyen koltuklara oturup birbirimize bakarken zaman sanki durmuştu. Manzara güzeldi ama en güzel görüntü yine karşımda oturan sendin.",
+        x: 41.0163191,
+        y: 29.0655582,
+        order: 2,
+    },
 ];
 
 // ==========================================

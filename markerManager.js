@@ -134,6 +134,7 @@ const markerManager = (() => {
             "pablo-rihtim": "☕",
             "bagdat-caddesi-kis": "❄️",
             "moveon-spor": "🏋️",
+            "camlica-kulesi": "👑",
         };
         if (byId[loc.id]) return byId[loc.id];
         const emojis = { 1: "📍", 2: "🌅", 3: "🎨", 4: "🎭", 5: "🏰" };
