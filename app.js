@@ -268,7 +268,7 @@
             attribution: "© OpenStreetMap", maxZoom: MAX_ZOOM, bounds: paddedBounds,
         }).addTo(map);
 
-        map.fitBounds(pointBounds.pad(0.15));
+
 
         // Marker manager: only shows unlocked markers
         markerManager.init(map, locations);
@@ -295,7 +295,7 @@
     //  SMOOTH CAMERA
     // ==========================================
     function smoothCamera(charLL) {
-        map.setView(charLL, map.getZoom(), { animate: false });
+        map.panTo(charLL, { animate: false });
     }
 
     // ==========================================
