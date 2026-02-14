@@ -104,11 +104,23 @@ const progressStore = (() => {
         }
     }
 
+    /** Unlock ALL remaining locations at once */
+    function unlockAll(allLocations) {
+        allLocations.forEach(l => {
+            if (!state.unlockedIds.includes(l.id)) {
+                state.unlockedIds.push(l.id);
+            }
+        });
+        state.currentOrder = Math.max(...allLocations.map(l => l.order)) + 1;
+        save();
+    }
+
     return {
         load,
         save,
         markViewed,
         unlockNext,
+        unlockAll,
         isUnlocked,
         isViewed,
         isAllViewed,

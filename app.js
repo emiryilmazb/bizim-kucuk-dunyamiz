@@ -134,7 +134,7 @@
             updateScore();
             updateHintPill();
 
-            setTimeout(() => showToast("💕", "Birlikte yürüdüğümüz yollar seni bekliyor!"), 600);
+            setTimeout(() => showToast("🏫", "Okula gel, seninle tanışalım! 💕"), 600);
         }, 100);
     }
 
@@ -213,11 +213,10 @@
         // Marker manager: only shows unlocked markers
         markerManager.init(map, locations);
 
-        // Character — start near first unlocked location
-        const firstLoc = [...locations].sort((a, b) => a.order - b.order)[0];
-        const startPos = firstLoc ? [firstLoc.x, firstLoc.y] : [pointBounds.getCenter().lat, pointBounds.getCenter().lng];
-        addCharacterMarker(startPos[0], startPos[1]);
-        map.setView(startPos, DEFAULT_ZOOM, { animate: false });
+        // Character — start at config spawn position
+        const sp = config.charSpawn || { x: firstLoc.x, y: firstLoc.y };
+        addCharacterMarker(sp.x, sp.y);
+        map.setView([sp.x, sp.y], DEFAULT_ZOOM, { animate: false });
 
         // Fog overlay
         fogOverlay.init(map);
@@ -618,22 +617,35 @@
     function showSheet(loc) {
         document.getElementById("ak-baslik").textContent = loc.title;
         const de = document.getElementById("ak-tarih");
-        const fe = document.getElementById("ak-foto");
-        const pe = document.getElementById("ak-placeholder");
+        const photosContainer = document.getElementById("ak-photos");
 
         if (loc.date) { de.textContent = `📅 ${loc.date}`; de.style.display = "block"; }
         else de.style.display = "none";
 
-        if (loc.photoUrl) {
-            fe.src = `assets/${loc.photoUrl}`;
-            fe.alt = loc.title;
-            fe.style.display = "block";
-            pe.style.display = "none";
+        // Multi-photo support
+        photosContainer.innerHTML = "";
+        const photos = loc.photoUrls || (loc.photoUrl ? [loc.photoUrl] : []);
+        if (photos.length > 0) {
+            photos.forEach(url => {
+                const img = document.createElement("img");
+                img.className = "sheet-foto";
+                img.src = url.startsWith("assets/") ? url : `assets/${url}`;
+                img.alt = loc.title;
+                img.addEventListener("click", () => {
+                    const lb = document.getElementById("lightbox");
+                    const lbImg = document.getElementById("lightbox-img");
+                    lbImg.src = img.src;
+                    lb.classList.add("show");
+                });
+                photosContainer.appendChild(img);
+            });
+            photosContainer.style.display = "flex";
         } else {
-            fe.src = "assets/placeholder.jpeg";
-            fe.alt = loc.title;
-            fe.style.display = "block";
-            pe.style.display = "none";
+            const placeholder = document.createElement("div");
+            placeholder.className = "sheet-placeholder";
+            placeholder.textContent = "💕";
+            photosContainer.appendChild(placeholder);
+            photosContainer.style.display = "flex";
         }
 
         document.getElementById("ak-metin").textContent = loc.description;
@@ -648,7 +660,7 @@
         sheetOverlay.classList.remove("show");
         sheet.style.transform = "";
 
-        // On close: unlock next marker
+        // On close: unlock markers based on flow
         if (wasShowing && currentSheetLocId) {
             const closedId = currentSheetLocId;
             currentSheetLocId = null;
@@ -664,14 +676,29 @@
                     }, 500);
                 }
             } else {
-                // Unlock the next location
-                const nextLoc = progressStore.unlockNext(locations);
-                if (nextLoc) {
-                    setTimeout(() => {
-                        markerManager.unlockNextMarker(nextLoc);
-                        updateHintPill();
-                        showToast("🌹", `Yeni hatıra açıldı: "${nextLoc.title}"`);
-                    }, 400);
+                // Check if this was the first location (school)
+                const closedLoc = locations.find(l => l.id === closedId);
+                if (closedLoc && closedLoc.order === 1) {
+                    // Unlock ALL remaining locations at once
+                    progressStore.unlockAll(locations);
+                    const remaining = locations.filter(l => l.id !== closedId && !progressStore.isViewed(l.id));
+                    remaining.forEach((loc, i) => {
+                        setTimeout(() => {
+                            markerManager.unlockNextMarker(loc);
+                        }, i * 200);
+                    });
+                    updateHintPill();
+                    showToast("🌟", `${remaining.length} yeni hatıra açıldı! Keşfetmeye başla!`);
+                } else {
+                    // Normal sequential unlock for any remaining
+                    const nextLoc = progressStore.unlockNext(locations);
+                    if (nextLoc) {
+                        setTimeout(() => {
+                            markerManager.unlockNextMarker(nextLoc);
+                            updateHintPill();
+                            showToast("🌹", `Yeni hatıra açıldı: "${nextLoc.title}"`);
+                        }, 400);
+                    }
                 }
             }
         }
@@ -701,7 +728,18 @@
         const next = sorted.find(l => progressStore.isUnlocked(l.id) && !progressStore.isViewed(l.id));
 
         if (next) {
-            hintText.textContent = `🌹 Sonraki: ${next.title}`;
+            if (next.order === 1) {
+                // Sweet school-first message
+                hintText.textContent = "🏫 Okula gel, seninle tanışmam lazım...";
+            } else {
+                // Count remaining unviewed
+                const remaining = locations.filter(l => progressStore.isUnlocked(l.id) && !progressStore.isViewed(l.id));
+                if (remaining.length > 1) {
+                    hintText.textContent = `💕 ${remaining.length} hatıra seni bekliyor`;
+                } else {
+                    hintText.textContent = `🌹 Son hatıra: ${next.title}`;
+                }
+            }
             hintPill.classList.remove("finale-hint");
             hintPill.style.display = "flex";
         } else {
