@@ -1386,7 +1386,10 @@ body {
   visibility: hidden;
   transition: opacity 1.5s ease, visibility 1.5s ease;
   overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
   overscroll-behavior: none;
+  touch-action: none;
 }
 
 .finale-overlay.show {
@@ -1408,10 +1411,11 @@ body {
   text-align: center;
   padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.1rem calc(env(safe-area-inset-bottom, 0px) + 1.1rem);
   max-width: 560px;
-  width: min(94vw, 560px);
+  width: min(92vw, 560px);
   max-height: 94vh;
   max-height: 94svh;
   overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1421,6 +1425,8 @@ body {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 1s ease, transform 1s ease;
+  width: 100%;
+  max-width: 100%;
 }
 
 .finale-text.show {
@@ -1440,6 +1446,8 @@ body {
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.8;
   font-style: italic;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .finale-btn {
@@ -1461,6 +1469,9 @@ body {
   transform: translateY(10px);
   transition: opacity 0.6s ease, transform 0.6s ease;
   animation: pulseBtn 2s ease-in-out infinite;
+  max-width: 100%;
+  white-space: normal;
+  text-wrap: balance;
 }
 
 .finale-btn.show {
@@ -1506,13 +1517,14 @@ body {
   max-height: 0;
   width: 100%;
   overflow: hidden;
+  overflow-x: hidden;
   transition: opacity 0.8s ease, transform 0.8s ease, max-height 0.9s ease;
 }
 
 .finale-note-area.show {
   opacity: 1;
   transform: translateY(0);
-  max-height: min(58vh, 58svh);
+  max-height: min(64vh, 64svh);
 }
 
 .finale-note-content {
@@ -1521,10 +1533,9 @@ body {
   border-radius: var(--radius);
   padding: 1.2rem;
   text-align: left;
-  max-height: min(58vh, 58svh);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  max-height: min(64vh, 64svh);
+  overflow: hidden;
+  overflow-x: hidden;
   width: 100%;
 }
 
@@ -1534,13 +1545,26 @@ body {
 }
 
 .finale-note-text {
+  display: block;
   font-family: var(--font-d);
   font-size: clamp(0.92rem, 2.9vw, 1.02rem);
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.82;
   white-space: pre-line;
+  max-height: min(56vh, 56svh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
   overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
   margin: 0;
+}
+
+.finale-note-text::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 /* Heart particles for finale */
@@ -1550,12 +1574,13 @@ body {
   pointer-events: none;
   animation: heartFloat linear forwards;
   opacity: 0.7;
+  will-change: transform, opacity;
 }
 
 @keyframes heartFloat {
   0% {
     opacity: 0;
-    transform: translateY(0) scale(0.5);
+    transform: translate3d(-50%, 0, 0) scale(0.5);
   }
 
   20% {
@@ -1564,7 +1589,51 @@ body {
 
   100% {
     opacity: 0;
-    transform: translateY(-100vh) scale(1.2) rotate(20deg);
+    transform: translate3d(calc(-50% + var(--drift-x, 0px)), -100vh, 0) scale(1.2) rotate(20deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .finale-content {
+    width: min(96vw, 560px);
+    padding: calc(env(safe-area-inset-top, 0px) + 1rem) 0.75rem calc(env(safe-area-inset-bottom, 0px) + 0.8rem);
+    max-height: 96vh;
+    max-height: 96svh;
+  }
+
+  .finale-heading {
+    font-size: 2.9rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .finale-message {
+    font-size: clamp(1.02rem, 4.8vw, 1.28rem);
+    line-height: 1.65;
+  }
+
+  .finale-btn {
+    margin-top: 1.25rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .finale-note-area {
+    margin-top: 0.95rem;
+  }
+
+  .finale-note-area.show {
+    max-height: min(68vh, 68svh);
+  }
+
+  .finale-note-content {
+    max-height: min(68vh, 68svh);
+    padding: 0.95rem 0.85rem;
+  }
+
+  .finale-note-text {
+    max-height: min(60vh, 60svh);
+    font-size: clamp(0.85rem, 3.7vw, 0.96rem);
+    line-height: 1.72;
   }
 }
 

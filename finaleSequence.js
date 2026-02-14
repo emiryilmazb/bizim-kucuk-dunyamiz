@@ -166,7 +166,8 @@ const finaleSequence = (() => {
         const el = document.createElement("div");
         el.className = "finale-heart-particle";
         el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-        el.style.left = `${Math.random() * 100}%`;
+        el.style.left = `${3 + Math.random() * 94}%`;
+        el.style.setProperty("--drift-x", `${(Math.random() - 0.5) * 34}px`);
         el.style.animationDuration = `${3.6 + Math.random() * 3.2}s`;
         el.style.fontSize = `${0.78 + Math.random() * 1.1}rem`;
         el.style.opacity = `${0.48 + Math.random() * 0.45}`;
