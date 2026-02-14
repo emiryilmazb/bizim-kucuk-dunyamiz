@@ -56,6 +56,19 @@ const locations = [
         y: 28.9054296,
         order: 2,
     },
+    {
+        id: "swissotel-aksami",
+        title: "Swissotel Çatı Maceramız 🌃",
+        photoUrls: [
+            "swissotel/photo_2026-02-14_12-33-31.jpg",
+            "swissotel/photo_2026-02-14_12-33-33.jpg",
+        ],
+        description:
+            "Özel bir günde Swissotel'in çatısındaki restorana gitmiştik. Yemekler ve servis biraz kalbimizi kırdı, hesap da ayrı bir dramdı ama manzara gerçekten her şeyi bir süreliğine unutturdu. O geceyi şimdi gülerek hatırlıyoruz: menü vasat, biz şahane, manzara efsane.",
+        x: 41.0411641,
+        y: 28.9976787,
+        order: 2,
+    },
 ];
 
 // ==========================================

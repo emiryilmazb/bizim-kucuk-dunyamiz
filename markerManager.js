@@ -127,6 +127,7 @@ const markerManager = (() => {
             "ilk-tanisma": "📍",
             "kiz-kulesi": "🏰",
             "tango-gecesi": "💃",
+            "swissotel-aksami": "🌃",
         };
         if (byId[loc.id]) return byId[loc.id];
         const emojis = { 1: "📍", 2: "🌅", 3: "🎨", 4: "🎭", 5: "🏰" };
