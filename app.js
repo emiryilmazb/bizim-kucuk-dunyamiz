@@ -234,22 +234,7 @@
     //  SMOOTH CAMERA
     // ==========================================
     function smoothCamera(charLL) {
-        const mapSize = map.getSize();
-        const charPx = map.latLngToContainerPoint(charLL);
-        const dx = mapSize.x * 0.35;
-        const dy = mapSize.y * 0.35;
-        const cx = mapSize.x / 2;
-        const cy = mapSize.y / 2;
-        const offX = charPx.x - cx;
-        const offY = charPx.y - cy;
-
-        if (Math.abs(offX) > dx || Math.abs(offY) > dy) {
-            const tX = offX > dx ? offX - dx : (offX < -dx ? offX + dx : 0);
-            const tY = offY > dy ? offY - dy : (offY < -dy ? offY + dy : 0);
-            const ccPx = map.latLngToContainerPoint(map.getCenter());
-            const newCenter = map.containerPointToLatLng(L.point(ccPx.x + tX, ccPx.y + tY));
-            map.setView(newCenter, map.getZoom(), { animate: false });
-        }
+        map.setView(charLL, map.getZoom(), { animate: false });
     }
 
     // ==========================================
