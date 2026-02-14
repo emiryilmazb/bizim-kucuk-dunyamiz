@@ -627,13 +627,20 @@ body {
 }
 
 /* Guide line animation on the map */
+.guide-line-outline {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.75))
+    drop-shadow(0 0 16px rgba(255, 93, 143, 0.45));
+}
+
 .guide-line-path {
-  animation: guideDash 1.5s linear infinite;
+  animation: guideDash 1s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8))
+    drop-shadow(0 0 10px rgba(255, 93, 143, 0.6));
 }
 
 @keyframes guideDash {
   to {
-    stroke-dashoffset: -32;
+    stroke-dashoffset: -52;
   }
 }
 
@@ -950,8 +957,8 @@ body {
 .settings-btn {
   position: fixed;
   bottom: 24px;
-  right: 16px;
-  z-index: 1100;
+  left: 16px;
+  z-index: 1200;
   width: 36px;
   height: 36px;
   border: none;
@@ -978,8 +985,8 @@ body {
 .settings-panel {
   position: fixed;
   bottom: 68px;
-  right: 16px;
-  z-index: 1100;
+  left: 16px;
+  z-index: 1200;
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);

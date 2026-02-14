@@ -16,8 +16,6 @@
     let activeKeys = new Set();
     let keyMoveRAF = null;
     let lastMoveTime = 0;
-    let trailPoints = [];
-    let trailLine = null;
     let finaleTriggered = false;
     let gameStarting = false;
     let isCharacterMoving = false;
@@ -27,7 +25,6 @@
     const MAX_ZOOM = 18;
     const DEFAULT_ZOOM = 15;
     const MOVE_SPEED = 0.00015;
-    const TRAIL_MAX = 15;
     const CHAR_IDLE_SRC = "assets/us.png";
     const CHAR_MOVING_SRC = "assets/us_with_bmw.png";
     const INTRO_AVATAR_TO_CENTER_MS = 1100;
@@ -290,6 +287,12 @@
         });
 
         map.on("drag", () => map.panInsideBounds(paddedBounds, { animate: false }));
+        map.createPane("guidePane");
+        const guidePane = map.getPane("guidePane");
+        if (guidePane) {
+            guidePane.style.zIndex = "460";
+            guidePane.style.pointerEvents = "none";
+        }
         L.control.zoom({ position: "bottomright" }).addTo(map);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© OpenStreetMap", maxZoom: MAX_ZOOM, bounds: paddedBounds,
@@ -324,21 +327,6 @@
     // ==========================================
     function smoothCamera(charLL) {
         map.panTo(charLL, { animate: false });
-    }
-
-    // ==========================================
-    //  TRAIL
-    // ==========================================
-    function updateTrail(ll) {
-        trailPoints.push([ll.lat, ll.lng]);
-        if (trailPoints.length > TRAIL_MAX) trailPoints.shift();
-        if (trailLine) map.removeLayer(trailLine);
-        if (trailPoints.length > 1) {
-            trailLine = L.polyline(trailPoints, {
-                color: "#e8807f", weight: 3, opacity: 0.25,
-                dashArray: "4,8", lineCap: "round", interactive: false,
-            }).addTo(map);
-        }
     }
 
     // ==========================================
@@ -406,18 +394,33 @@
     //  GUIDE LINE — dashed line from avatar to next marker
     // ==========================================
     let guideLine = null;
+    let guideLineGlow = null;
     function updateGuideLine(fromLL, toLL) {
         if (guideLine) { map.removeLayer(guideLine); guideLine = null; }
+        if (guideLineGlow) { map.removeLayer(guideLineGlow); guideLineGlow = null; }
         if (!fromLL || !toLL) return;
 
-        guideLine = L.polyline([
+        const segment = [
             [fromLL.lat, fromLL.lng],
             [toLL.lat, toLL.lng]
-        ], {
-            color: "#e8807f",
-            weight: 3.5,
-            opacity: 0.65,
-            dashArray: "8,12",
+        ];
+
+        guideLineGlow = L.polyline(segment, {
+            pane: "guidePane",
+            color: "#fff7f9",
+            weight: 9,
+            opacity: 0.38,
+            lineCap: "round",
+            interactive: false,
+            className: "guide-line-outline"
+        }).addTo(map);
+
+        guideLine = L.polyline(segment, {
+            pane: "guidePane",
+            color: "#ff5d8f",
+            weight: 5.5,
+            opacity: 0.98,
+            dashArray: "16,10",
             lineCap: "round",
             interactive: false,
             className: "guide-line-path"
@@ -468,7 +471,6 @@
             );
             characterMarker.setLatLng(pos);
             smoothCamera(pos);
-            updateTrail(pos);
             checkProximity(pos);
             updateWarmth(pos);
             fogOverlay.updateAvatar(pos);
@@ -567,7 +569,6 @@
             characterMarker.setLatLng(newLL);
             smoothCamera(newLL);
 
-            if (now - (tick._lt || 0) > 150) { updateTrail(newLL); tick._lt = now; }
             checkProximity(newLL);
             updateWarmth(newLL);
             fogOverlay.updateAvatar(newLL);
