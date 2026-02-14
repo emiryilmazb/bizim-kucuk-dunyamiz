@@ -133,6 +133,7 @@ const markerManager = (() => {
             "alsancak-gunbatimi": "🌇",
             "pablo-rihtim": "☕",
             "bagdat-caddesi-kis": "❄️",
+            "moveon-spor": "🏋️",
         };
         if (byId[loc.id]) return byId[loc.id];
         const emojis = { 1: "📍", 2: "🌅", 3: "🎨", 4: "🎭", 5: "🏰" };

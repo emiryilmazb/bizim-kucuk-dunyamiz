@@ -137,6 +137,18 @@ const locations = [
         y: 29.083479,
         order: 2,
     },
+    {
+        id: "moveon-spor",
+        title: "MoveOn'da Spor Randevusu 🏋️",
+        photoUrls: [
+            "spor/photo_2026-02-14_12-35-34.jpg",
+        ],
+        description:
+            "Kız arkadaşımla birlikte spora geldiğimiz bu günün fotoğrafı tam bir karakter özeti gibi: Damla manken gibi ışıl ışıl, ben ise yeni seti bitirmiş nefes nefese benchte hayata tutunuyorum. Ama yan yana olduğumuz her an gibi, yorgunluğu bile tatlı bir anıya çevirdi.",
+        x: 40.9364192,
+        y: 29.1257523,
+        order: 2,
+    },
 ];
 
 // ==========================================
