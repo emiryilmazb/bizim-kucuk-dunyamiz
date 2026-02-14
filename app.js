@@ -755,9 +755,10 @@
     //  UI HELPERS
     // ==========================================
     function updateScore() {
-        const viewed = progressStore.getState().viewedIds.length;
+        const validIds = new Set(locations.map(loc => loc.id));
+        const viewed = progressStore.getState().viewedIds.filter(id => validIds.has(id)).length;
         scoreText.textContent = `${viewed} / ${locations.length}`;
-        progressFill.style.width = Math.round((viewed / locations.length) * 100) + "%";
+        progressFill.style.width = Math.min(100, Math.round((viewed / locations.length) * 100)) + "%";
         const hud = document.getElementById("hud-score");
         if (hud) { hud.classList.add("pop"); setTimeout(() => hud.classList.remove("pop"), 400); }
     }

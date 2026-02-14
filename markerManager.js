@@ -123,6 +123,11 @@ const markerManager = (() => {
     }
 
     function getDiscoveredEmoji(loc) {
+        const byId = {
+            "ilk-tanisma": "📍",
+            "kiz-kulesi": "🏰",
+        };
+        if (byId[loc.id]) return byId[loc.id];
         const emojis = { 1: "📍", 2: "🌅", 3: "🎨", 4: "🎭", 5: "🏰" };
         return emojis[loc.order] || "💫";
     }

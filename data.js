@@ -24,53 +24,22 @@ const locations = [
         photoUrls: ["1ilktanışma.jpeg"],
         description:
             "İyi ki o gün o bahçeye çıkmışım, iyi ki seni görmüşüm. O an hayatımın en güzel tesadüfü oldu. Gözlerine baktığım ilk an, kalbimin sana ait olacağını biliyordum. Her şey o anda başladı... Seninle tanıştığım o bahçe, benim için dünyanın en özel yeri oldu.",
-        date: "14 Şubat 2023",
+        date: "27 Ekim 2024",
         x: 41.1052707,
         y: 28.9858336,
         order: 1,
     },
     {
-        id: "bogaz-yuruyusu",
-        title: "Boğaz'da İlk Yürüyüşümüz 🌅",
-        photoUrls: [],
-        description:
-            "Bebek sahilinde yürürken güneş batıyordu. Ellerini ilk kez tuttum ve kalbimin ne kadar hızlı attığını hissettim. O an sonsuza kadar sürsün istedim.",
-        date: "3 Mart 2023",
-        x: 41.0797,
-        y: 29.0451,
-        order: 2,
-    },
-    {
-        id: "balat-sokaklar",
-        title: "Balat'ta Renkli Sokaklar 🎨",
-        photoUrls: [],
-        description:
-            "Balat'ın renkli sokaklarında saatlerce kayboldum seninle. Her köşe başı yeni bir sürprizdi. Kahvemizi yudumlarken dünya sadece ikimize aitti.",
-        date: "15 Haziran 2023",
-        x: 41.0295,
-        y: 28.9487,
-        order: 2,
-    },
-    {
-        id: "kadikoy-sokaklar",
-        title: "Kadıköy Sokaklarında Kaybolmak 🎭",
-        photoUrls: [],
-        description:
-            "Kadıköy'ün renkli sokaklarında saatlerce yürüdük. Sokak müzisyenlerini dinledik, vintage dükkanları keşfettik. Seninle kaybolmak bile bir macera.",
-        date: "20 Ağustos 2023",
-        x: 40.9903,
-        y: 29.0244,
-        order: 2,
-    },
-    {
         id: "kiz-kulesi",
-        title: "Kız Kulesi Manzarası 🏰",
-        photoUrls: [],
+        title: "Kız Kulesi Gecemiz 🌙🏰",
+        photoUrls: [
+            "kizkulesi/photo_2026-02-14_12-32-46.jpg",
+            "kizkulesi/photo_2026-02-14_12-33-24.jpg",
+        ],
         description:
-            "Yeni yılı Üsküdar sahilinde karşıladık. Kız Kulesi'nin ışıkları suya yansırken yeni bir yılın ilk dakikalarını birlikte yaşadık. En güzel başlangıçtı.",
-        date: "1 Ocak 2024",
-        x: 41.0211,
-        y: 29.004,
+            "O gece seni arabayla Kız Kulesi'nin önüne götürmüştüm. Şehrin ışıkları suya vururken yan yana oturup uzun uzun konuştuk. Sessizlik bile o kadar güzeldi ki, sanki zaman sadece ikimiz için yavaşladı. O an kalbimde hep saklayacağım en tatlı anılardan biri oldu.",
+        x: 41.021872,
+        y: 29.0080142,
         order: 2,
     },
 ];
