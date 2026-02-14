@@ -350,9 +350,9 @@
             [toLL.lat, toLL.lng]
         ], {
             color: "#e8807f",
-            weight: 2,
-            opacity: 0.4,
-            dashArray: "6,10",
+            weight: 3.5,
+            opacity: 0.65,
+            dashArray: "8,12",
             lineCap: "round",
             interactive: false,
             className: "guide-line-path"
@@ -417,7 +417,15 @@
     function setCharacterMoving(m) {
         const el = characterMarker ? characterMarker.getElement() : null;
         if (!el) return;
-        if (m) el.classList.add("moving"); else el.classList.remove("moving");
+        if (m) {
+            el.classList.add("moving");
+            const img = el.querySelector(".char-img");
+            if (img) img.src = "assets/us_with_bmw.png";
+        } else {
+            el.classList.remove("moving");
+            const img = el.querySelector(".char-img");
+            if (img) img.src = "assets/us.png";
+        }
     }
 
     // ==========================================
@@ -522,14 +530,14 @@
     }
 
     // ==========================================
-    //  CHARACTER MARKER — 💖
+    //  CHARACTER MARKER — Custom Image
     // ==========================================
     function addCharacterMarker(lat, lng) {
         characterMarker = L.marker([lat, lng], {
             icon: L.divIcon({
                 className: "heart-marker",
-                html: '<span class="char-inner">💖</span>',
-                iconSize: [44, 44], iconAnchor: [22, 22],
+                html: '<img class="char-img" src="assets/us.png" alt="Biz" draggable="false" />',
+                iconSize: [52, 52], iconAnchor: [26, 26],
             }),
             draggable: true, autoPan: false,
         }).addTo(map);
