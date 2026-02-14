@@ -213,9 +213,11 @@
         // Marker manager: only shows unlocked markers
         markerManager.init(map, locations);
 
-        // Character
-        const c = pointBounds.getCenter();
-        addCharacterMarker(c.lat, c.lng);
+        // Character — start near first unlocked location
+        const firstLoc = [...locations].sort((a, b) => a.order - b.order)[0];
+        const startPos = firstLoc ? [firstLoc.x, firstLoc.y] : [pointBounds.getCenter().lat, pointBounds.getCenter().lng];
+        addCharacterMarker(startPos[0], startPos[1]);
+        map.setView(startPos, DEFAULT_ZOOM, { animate: false });
 
         // Fog overlay
         fogOverlay.init(map);
@@ -474,10 +476,7 @@
             const aLng = newLL.lng - ll.lng;
 
             characterMarker.setLatLng(newLL);
-            if (aLat !== 0 || aLng !== 0) {
-                const center = map.getCenter();
-                map.setView([center.lat + aLat, center.lng + aLng], map.getZoom(), { animate: false });
-            }
+            smoothCamera(newLL);
 
             if (now - (tick._lt || 0) > 150) { updateTrail(newLL); tick._lt = now; }
             checkProximity(newLL);
