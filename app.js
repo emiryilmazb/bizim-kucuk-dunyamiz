@@ -14,6 +14,7 @@
     let map, mapBounds, characterMarker;
     let moveAnimation = null;
     let activeKeys = new Set();
+    const analogInput = { x: 0, y: 0, active: false };
     let keyMoveRAF = null;
     let lastMoveTime = 0;
     let finaleTriggered = false;
@@ -190,7 +191,7 @@
             setupMap();
             setupEventListeners();
             setupKeyboard();
-            setupDpad();
+            setupJoystick();
             setupSheetGestures();
             setupLightbox();
             setupSettings();
@@ -508,40 +509,104 @@
         });
         document.addEventListener("keyup", e => {
             activeKeys.delete(e.key.toLowerCase());
-            if (activeKeys.size === 0) stopContinuousMove();
+            if (activeKeys.size === 0 && !analogInput.active) stopContinuousMove();
         });
     }
 
     // ==========================================
-    //  D-PAD
+    //  JOYSTICK
     // ==========================================
-    function setupDpad() {
-        const dirs = {
-            "dpad-up": [1, 0], "dpad-down": [-1, 0],
-            "dpad-left": [0, -1], "dpad-right": [0, 1],
-        };
-        Object.keys(dirs).forEach(id => {
-            const btn = document.getElementById(id);
-            if (!btn) return;
-            function down(e) { e.preventDefault(); activeKeys.add(id); btn.classList.add("active"); startContinuousMove(); }
-            function up(e) { if (e) e.preventDefault(); activeKeys.delete(id); btn.classList.remove("active"); if (activeKeys.size === 0) stopContinuousMove(); }
-            btn.addEventListener("touchstart", down, { passive: false });
-            btn.addEventListener("touchend", up, { passive: false });
-            btn.addEventListener("touchcancel", up);
-            btn.addEventListener("mousedown", down);
-            btn.addEventListener("mouseup", up);
-            btn.addEventListener("mouseleave", up);
-        });
+    function setupJoystick() {
+        const joystick = document.getElementById("joystick");
+        const knob = document.getElementById("joystick-knob");
+        if (!joystick || !knob) return;
+
+        let pointerId = null;
+        const deadZone = 0.12;
+
+        function resetJoystick() {
+            analogInput.x = 0;
+            analogInput.y = 0;
+            analogInput.active = false;
+            knob.style.transform = "translate(0px, 0px)";
+            joystick.classList.remove("active");
+            if (activeKeys.size === 0) stopContinuousMove();
+        }
+
+        function applyJoystick(clientX, clientY) {
+            const rect = joystick.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const maxDistance = (rect.width - knob.offsetWidth) / 2;
+
+            let dx = clientX - centerX;
+            let dy = clientY - centerY;
+            const distance = Math.hypot(dx, dy);
+
+            if (distance > maxDistance) {
+                const scale = maxDistance / distance;
+                dx *= scale;
+                dy *= scale;
+            }
+
+            knob.style.transform = `translate(${dx}px, ${dy}px)`;
+
+            let nx = dx / maxDistance;
+            let ny = -dy / maxDistance;
+            const magnitude = Math.hypot(nx, ny);
+            if (magnitude < deadZone) {
+                nx = 0;
+                ny = 0;
+            } else if (magnitude > 1) {
+                nx /= magnitude;
+                ny /= magnitude;
+            }
+
+            analogInput.x = nx;
+            analogInput.y = ny;
+            analogInput.active = nx !== 0 || ny !== 0;
+            joystick.classList.toggle("active", analogInput.active);
+
+            if (analogInput.active) startContinuousMove();
+            else if (activeKeys.size === 0) stopContinuousMove();
+        }
+
+        function onPointerDown(e) {
+            e.preventDefault();
+            pointerId = e.pointerId;
+            joystick.setPointerCapture(pointerId);
+            applyJoystick(e.clientX, e.clientY);
+        }
+
+        function onPointerMove(e) {
+            if (pointerId !== e.pointerId) return;
+            e.preventDefault();
+            applyJoystick(e.clientX, e.clientY);
+        }
+
+        function onPointerEnd(e) {
+            if (pointerId !== e.pointerId) return;
+            e.preventDefault();
+            pointerId = null;
+            resetJoystick();
+        }
+
+        joystick.addEventListener("pointerdown", onPointerDown);
+        joystick.addEventListener("pointermove", onPointerMove);
+        joystick.addEventListener("pointerup", onPointerEnd);
+        joystick.addEventListener("pointercancel", onPointerEnd);
+        joystick.addEventListener("lostpointercapture", resetJoystick);
+        window.addEventListener("blur", resetJoystick);
     }
 
     // ==========================================
     //  CONTINUOUS MOVE
     // ==========================================
     const dirMap = {
-        "arrowup": [1, 0], "w": [1, 0], "dpad-up": [1, 0],
-        "arrowdown": [-1, 0], "s": [-1, 0], "dpad-down": [-1, 0],
-        "arrowleft": [0, -1], "a": [0, -1], "dpad-left": [0, -1],
-        "arrowright": [0, 1], "d": [0, 1], "dpad-right": [0, 1],
+        "arrowup": [1, 0], "w": [1, 0],
+        "arrowdown": [-1, 0], "s": [-1, 0],
+        "arrowleft": [0, -1], "a": [0, -1],
+        "arrowright": [0, 1], "d": [0, 1],
     };
 
     function startContinuousMove() {
@@ -556,6 +621,10 @@
 
             let dlat = 0, dlng = 0;
             activeKeys.forEach(k => { const d = dirMap[k]; if (d) { dlat += d[0]; dlng += d[1]; } });
+            if (analogInput.active) {
+                dlat += analogInput.y;
+                dlng += analogInput.x;
+            }
             if (dlat === 0 && dlng === 0) { keyMoveRAF = requestAnimationFrame(tick); return; }
             if (dlat !== 0 && dlng !== 0) { const len = Math.sqrt(dlat * dlat + dlng * dlng); dlat /= len; dlng /= len; }
 
@@ -563,8 +632,6 @@
             const stepLat = dlat * MOVE_SPEED * dt;
             const stepLng = dlng * MOVE_SPEED * dt;
             const newLL = clampToBounds(L.latLng(ll.lat + stepLat, ll.lng + stepLng));
-            const aLat = newLL.lat - ll.lat;
-            const aLng = newLL.lng - ll.lng;
 
             characterMarker.setLatLng(newLL);
             smoothCamera(newLL);
