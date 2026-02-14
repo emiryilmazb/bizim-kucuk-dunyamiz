@@ -19,13 +19,18 @@
     let trailPoints = [];
     let trailLine = null;
     let finaleTriggered = false;
+    let gameStarting = false;
+    let isCharacterMoving = false;
 
     const PROXIMITY_THRESHOLD = 500;
     const MIN_ZOOM = 8;
     const MAX_ZOOM = 18;
-    const DEFAULT_ZOOM = 16;
+    const DEFAULT_ZOOM = 15;
     const MOVE_SPEED = 0.00015;
     const TRAIL_MAX = 15;
+    const CHAR_IDLE_SRC = "assets/us.png";
+    const CHAR_MOVING_SRC = "assets/us_with_bmw.png";
+    const INTRO_AVATAR_TO_CENTER_MS = 1100;
 
     // ---------- DOM ----------
     const scoreText = document.getElementById("score-text");
@@ -51,6 +56,7 @@
     // ==========================================
     function init() {
         setupParticles();
+        preloadCharacterImages();
         setupIntro();
     }
 
@@ -111,14 +117,18 @@
     //  START GAME
     // ==========================================
     function startGame() {
-        // Grab the mission avatar position before fading
-        const avatar = document.querySelector('.mission-avatar');
+        if (gameStarting) return;
+        gameStarting = true;
+
+        // Grab the currently visible mission avatar position before fading.
+        const avatar = document.querySelector(".mission-avatar");
+        const allSteps = document.querySelectorAll(".intro-step");
         let flyingAvatar = null;
 
         if (avatar) {
             const rect = avatar.getBoundingClientRect();
-            flyingAvatar = document.createElement('img');
-            flyingAvatar.src = 'assets/us.png';
+            flyingAvatar = document.createElement("img");
+            flyingAvatar.src = avatar.currentSrc || avatar.src || CHAR_IDLE_SRC;
             flyingAvatar.style.cssText = `
                 position: fixed;
                 top: ${rect.top}px;
@@ -130,72 +140,89 @@
                 border: 3px solid #fff;
                 box-shadow: 0 4px 20px rgba(232,128,127,0.4);
                 z-index: 9999;
-                transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+                transition:
+                    top ${INTRO_AVATAR_TO_CENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1),
+                    left ${INTRO_AVATAR_TO_CENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1),
+                    width ${INTRO_AVATAR_TO_CENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1),
+                    height ${INTRO_AVATAR_TO_CENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1),
+                    box-shadow ${INTRO_AVATAR_TO_CENTER_MS}ms cubic-bezier(0.22, 1, 0.36, 1);
                 pointer-events: none;
             `;
             document.body.appendChild(flyingAvatar);
+            avatar.style.opacity = "0";
+            avatar.style.transition = "opacity 0.2s ease";
         }
 
         // Fade out intro
-        const allSteps = document.querySelectorAll('.intro-step');
         allSteps.forEach(s => {
-            s.style.transition = 'opacity 0.6s ease';
-            s.style.opacity = '0';
+            s.style.transition = "opacity 0.6s ease";
+            s.style.opacity = "0";
         });
 
         // Animate avatar to center of screen
         if (flyingAvatar) {
+            const targetSize = 52;
             requestAnimationFrame(() => {
-                flyingAvatar.style.top = `${window.innerHeight / 2 - 26}px`;
-                flyingAvatar.style.left = `${window.innerWidth / 2 - 26}px`;
-                flyingAvatar.style.width = '52px';
-                flyingAvatar.style.height = '52px';
-                flyingAvatar.style.boxShadow = '0 3px 12px rgba(0,0,0,0.25)';
+                flyingAvatar.style.top = `${window.innerHeight / 2 - targetSize / 2}px`;
+                flyingAvatar.style.left = `${window.innerWidth / 2 - targetSize / 2}px`;
+                flyingAvatar.style.width = `${targetSize}px`;
+                flyingAvatar.style.height = `${targetSize}px`;
+                flyingAvatar.style.boxShadow = "0 3px 12px rgba(0,0,0,0.25)";
             });
         }
 
+        const startDelay = flyingAvatar ? INTRO_AVATAR_TO_CENTER_MS : 450;
+        setTimeout(() => bootGame(allSteps, flyingAvatar), startDelay);
+    }
+
+    function bootGame(allSteps, flyingAvatar) {
+        allSteps.forEach(s => s.classList.remove("active"));
+
+        const game = document.getElementById("game");
+        game.style.display = "block";
+        game.style.opacity = "0";
+        game.style.transition = "opacity 0.8s ease";
+        document.body.style.background = "#fdf6f0";
+
         setTimeout(() => {
-            allSteps.forEach(s => s.classList.remove('active'));
+            game.style.opacity = "1";
 
-            const game = document.getElementById("game");
-            game.style.display = "block";
-            game.style.opacity = "0";
-            game.style.transition = "opacity 0.8s ease";
-            document.body.style.background = "#fdf6f0";
+            // Load progress
+            progressStore.load(locations);
 
-            setTimeout(() => {
-                game.style.opacity = "1";
+            setupMap();
+            setupEventListeners();
+            setupKeyboard();
+            setupDpad();
+            setupSheetGestures();
+            setupLightbox();
+            setupSettings();
+            updateScore();
+            updateHintPill();
 
-                // Load progress
-                progressStore.load(locations);
+            // Remove flying avatar after map character is visible
+            if (flyingAvatar) {
+                setTimeout(() => {
+                    flyingAvatar.style.opacity = "0";
+                    flyingAvatar.style.transition = "opacity 0.35s ease";
+                    setTimeout(() => flyingAvatar.remove(), 350);
+                }, 220);
+            }
 
-                setupMap();
-                setupEventListeners();
-                setupKeyboard();
-                setupDpad();
-                setupSheetGestures();
-                setupLightbox();
-                setupSettings();
-                updateScore();
-                updateHintPill();
-
-                // Remove flying avatar after map character is visible
-                if (flyingAvatar) {
-                    setTimeout(() => {
-                        flyingAvatar.style.opacity = '0';
-                        flyingAvatar.style.transition = 'opacity 0.4s ease';
-                        setTimeout(() => flyingAvatar.remove(), 400);
-                    }, 300);
-                }
-
-                setTimeout(() => showToast("🏠", "Okula git, seninle tanışalım! 💕"), 800);
-            }, 50);
-        }, 700);
+            setTimeout(() => showToast("🏠", "Okula git, seninle tanışalım! 💕"), 800);
+        }, 50);
     }
 
     // ==========================================
     //  PARTICLES (Splash)
     // ==========================================
+    function preloadCharacterImages() {
+        [CHAR_IDLE_SRC, CHAR_MOVING_SRC].forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+    }
+
     function setupParticles() {
         const canvas = document.getElementById("particles-canvas");
         if (!canvas) return;
@@ -277,6 +304,7 @@
         const sp = config.charSpawn || { x: firstLoc.x, y: firstLoc.y };
         addCharacterMarker(sp.x, sp.y);
         map.setView([sp.x, sp.y], DEFAULT_ZOOM, { animate: false });
+        map.on("zoomend viewreset", applyCharacterVisualState);
 
         // Fog overlay
         fogOverlay.init(map);
@@ -452,17 +480,19 @@
     }
 
     function setCharacterMoving(m) {
+        isCharacterMoving = Boolean(m);
+        applyCharacterVisualState();
+    }
+
+    function applyCharacterVisualState() {
         const el = characterMarker ? characterMarker.getElement() : null;
         if (!el) return;
-        if (m) {
-            el.classList.add("moving");
-            const img = el.querySelector(".char-img");
-            if (img) img.src = "assets/us_with_bmw.png";
-        } else {
-            el.classList.remove("moving");
-            const img = el.querySelector(".char-img");
-            if (img) img.src = "assets/us.png";
-        }
+        el.classList.toggle("moving", isCharacterMoving);
+        const img = el.querySelector(".char-img");
+        if (!img) return;
+
+        const nextSrc = isCharacterMoving ? CHAR_MOVING_SRC : CHAR_IDLE_SRC;
+        if (img.getAttribute("src") !== nextSrc) img.setAttribute("src", nextSrc);
     }
 
     // ==========================================
@@ -570,11 +600,14 @@
         characterMarker = L.marker([lat, lng], {
             icon: L.divIcon({
                 className: "heart-marker",
-                html: '<img class="char-img" src="assets/us.png" alt="Biz" draggable="false" />',
+                html: `<img class="char-img" src="${CHAR_IDLE_SRC}" alt="Biz" draggable="false" />`,
                 iconSize: [52, 52], iconAnchor: [26, 26],
             }),
             draggable: true, autoPan: false,
         }).addTo(map);
+
+        applyCharacterVisualState();
+        requestAnimationFrame(applyCharacterVisualState);
 
         characterMarker.on("dragstart", () => {
             if (moveAnimation) { cancelAnimationFrame(moveAnimation); moveAnimation = null; }
@@ -900,12 +933,7 @@
     const lightboxClose = document.getElementById("lightbox-close");
 
     function setupLightbox() {
-        document.getElementById("ak-foto").addEventListener("click", () => {
-            const src = document.getElementById("ak-foto").src;
-            if (!src) return;
-            lightboxImg.src = src;
-            lightbox.classList.add("show");
-        });
+        if (!lightbox || !lightboxClose || !lightboxImg) return;
         lightboxClose.addEventListener("click", closeLightbox);
         lightbox.addEventListener("click", e => { if (e.target === lightbox) closeLightbox(); });
     }
