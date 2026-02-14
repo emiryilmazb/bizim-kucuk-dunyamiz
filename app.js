@@ -21,10 +21,10 @@
     let finaleTriggered = false;
 
     const PROXIMITY_THRESHOLD = 500;
-    const MIN_ZOOM = 10;
+    const MIN_ZOOM = 8;
     const MAX_ZOOM = 18;
-    const DEFAULT_ZOOM = 15;
-    const MOVE_SPEED = 0.00025;
+    const DEFAULT_ZOOM = 16;
+    const MOVE_SPEED = 0.00015;
     const TRAIL_MAX = 15;
 
     // ---------- DOM ----------
@@ -111,12 +111,48 @@
     //  START GAME
     // ==========================================
     function startGame() {
-        // Smooth fade-out intro
+        // Grab the mission avatar position before fading
+        const avatar = document.querySelector('.mission-avatar');
+        let flyingAvatar = null;
+
+        if (avatar) {
+            const rect = avatar.getBoundingClientRect();
+            flyingAvatar = document.createElement('img');
+            flyingAvatar.src = 'assets/us.png';
+            flyingAvatar.style.cssText = `
+                position: fixed;
+                top: ${rect.top}px;
+                left: ${rect.left}px;
+                width: ${rect.width}px;
+                height: ${rect.height}px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid #fff;
+                box-shadow: 0 4px 20px rgba(232,128,127,0.4);
+                z-index: 9999;
+                transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+                pointer-events: none;
+            `;
+            document.body.appendChild(flyingAvatar);
+        }
+
+        // Fade out intro
         const allSteps = document.querySelectorAll('.intro-step');
         allSteps.forEach(s => {
-            s.style.transition = 'opacity 0.8s ease';
+            s.style.transition = 'opacity 0.6s ease';
             s.style.opacity = '0';
         });
+
+        // Animate avatar to center of screen
+        if (flyingAvatar) {
+            requestAnimationFrame(() => {
+                flyingAvatar.style.top = `${window.innerHeight / 2 - 26}px`;
+                flyingAvatar.style.left = `${window.innerWidth / 2 - 26}px`;
+                flyingAvatar.style.width = '52px';
+                flyingAvatar.style.height = '52px';
+                flyingAvatar.style.boxShadow = '0 3px 12px rgba(0,0,0,0.25)';
+            });
+        }
 
         setTimeout(() => {
             allSteps.forEach(s => s.classList.remove('active'));
@@ -124,7 +160,7 @@
             const game = document.getElementById("game");
             game.style.display = "block";
             game.style.opacity = "0";
-            game.style.transition = "opacity 1s ease";
+            game.style.transition = "opacity 0.8s ease";
             document.body.style.background = "#fdf6f0";
 
             setTimeout(() => {
@@ -143,9 +179,18 @@
                 updateScore();
                 updateHintPill();
 
-                setTimeout(() => showToast("🏫", "Okula git, seninle tanışalım! 💕"), 600);
+                // Remove flying avatar after map character is visible
+                if (flyingAvatar) {
+                    setTimeout(() => {
+                        flyingAvatar.style.opacity = '0';
+                        flyingAvatar.style.transition = 'opacity 0.4s ease';
+                        setTimeout(() => flyingAvatar.remove(), 400);
+                    }, 300);
+                }
+
+                setTimeout(() => showToast("🏠", "Okula git, seninle tanışalım! 💕"), 800);
             }, 50);
-        }, 800);
+        }, 700);
     }
 
     // ==========================================
@@ -200,11 +245,13 @@
     //  MAP SETUP
     // ==========================================
     function setupMap() {
-        // Include spawn point AND all location points in bounds
+        // Include spawn, locations, and İzmir anchor in bounds
         const allPoints = locations.map(a => [a.x, a.y]);
         if (config.charSpawn) allPoints.push([config.charSpawn.x, config.charSpawn.y]);
+        // İzmir anchor to widen playable area
+        allPoints.push([38.42, 27.13]);
         const pointBounds = L.latLngBounds(allPoints);
-        const paddedBounds = pointBounds.pad(0.4);
+        const paddedBounds = pointBounds.pad(0.2);
         mapBounds = paddedBounds;
 
         map = L.map("map", {
