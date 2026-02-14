@@ -59,7 +59,7 @@
     // ==========================================
     function setupIntro() {
         setTimeout(() => {
-            typewriterIntro("step1-text", "Sana bir şey göstermek istiyorum...", 55);
+            typewriterIntro("step1-text", "Sana özel bir dünya hazırladım...", 60);
         }, 600);
 
         document.getElementById("step-1").addEventListener("click", () => goToStep(2));
@@ -134,7 +134,7 @@
             updateScore();
             updateHintPill();
 
-            setTimeout(() => showToast("💡", "Haritaya dokun veya yön tuşlarını kullan!"), 600);
+            setTimeout(() => showToast("💕", "Birlikte yürüdüğümüz yollar seni bekliyor!"), 600);
         }, 100);
     }
 
@@ -305,10 +305,10 @@
             else { warmthDot.textContent = "🔵"; warmthDot.className = "warmth-dot cold"; }
         }
         if (warmthText) {
-            if (warmth > 0.8) warmthText.textContent = "Çok yakın!";
-            else if (warmth > 0.5) warmthText.textContent = "Yaklaşıyorsun!";
-            else if (warmth > 0.25) warmthText.textContent = "Ilık";
-            else warmthText.textContent = "Soğuk";
+            if (warmth > 0.8) warmthText.textContent = "Çok yakın! 💓";
+            else if (warmth > 0.5) warmthText.textContent = "Yaklaşıyorsun 🌹";
+            else if (warmth > 0.25) warmthText.textContent = "Yoldasın...";
+            else warmthText.textContent = "Keşfet ✨";
         }
         if (distanceBadge) distanceBadge.style.opacity = "1";
 
@@ -589,8 +589,16 @@
         spawnFloatingEmojis(marker.getLatLng(), 6);
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-        const emoji = ["📍", "🌅", "🎨", "🎭", "🏰"][loc.order - 1] || "💫";
-        showToast(emoji, `"${loc.title}" keşfedildi!`);
+        const emojis = ["💖", "🌹", "🌟", "🥰", "💞"];
+        const emoji = emojis[loc.order - 1] || "💫";
+        const loveTexts = [
+            "Bu anıyı hatırlıyor musun?",
+            "Ne güzel günlermiş...",
+            "Kalbimde hep saklayacağım hatıra 💓",
+            "Seninle her an böyle güzel ✨",
+            "Bu anı asla unutmayacağım 💕"
+        ];
+        showToast(emoji, loveTexts[loc.order - 1] || `"${loc.title}" keşfedildi!`);
 
         // Show memory sheet
         currentSheetLocId = loc.id;
@@ -668,7 +676,7 @@
                     setTimeout(() => {
                         markerManager.spawnFinaleMarker(finaleLocation);
                         updateHintPill();
-                        showToast("✨", "Finale noktası belirlendi!");
+                        showToast("💖", "Son sürpriz hazır... seni bekliyor!");
                     }, 500);
                 }
             } else {
@@ -678,7 +686,7 @@
                     setTimeout(() => {
                         markerManager.unlockNextMarker(nextLoc);
                         updateHintPill();
-                        showToast("🗺️", `Yeni nokta: "${nextLoc.title}"`);
+                        showToast("🌹", `Yeni hatıra açıldı: "${nextLoc.title}"`);
                     }, 400);
                 }
             }
@@ -697,7 +705,7 @@
             if (finaleTriggered) {
                 hintPill.style.display = "none";
             } else {
-                hintText.textContent = "✨ Finale noktasına git!";
+                hintText.textContent = "💖 Son sürpriz seni bekliyor!";
                 hintPill.classList.add("finale-hint");
                 hintPill.style.display = "flex";
             }
@@ -709,7 +717,7 @@
         const next = sorted.find(l => progressStore.isUnlocked(l.id) && !progressStore.isViewed(l.id));
 
         if (next) {
-            hintText.textContent = `Sonraki: ${next.title}`;
+            hintText.textContent = `🌹 Sonraki: ${next.title}`;
             hintPill.classList.remove("finale-hint");
             hintPill.style.display = "flex";
         } else {
@@ -845,9 +853,9 @@
 
         if (closest) {
             map.flyTo(closest.getLatLng(), 14, { duration: 0.8 });
-            showToast("🧭", "O tarafa git!");
+            showToast("💓", "Kalbinin sesini takip et!");
         } else {
-            showToast("🎉", "Tüm anıları buldun!");
+            showToast("💕", "Tüm anılarımızı buldun!");
         }
     }
 
