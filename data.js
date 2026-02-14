@@ -69,6 +69,32 @@ const locations = [
         y: 28.9976787,
         order: 2,
     },
+    {
+        id: "buyukada-plaj",
+        title: "Büyükada'da Deniz Kaçamağı 🌊",
+        photoUrls: [
+            "buyukada/photo_2026-02-14_12-33-51.jpg",
+            "buyukada/photo_2026-02-14_12-33-54.jpg",
+        ],
+        description:
+            "Büyükada'da plaja gidip birlikte yüzdüğümüz o gün tam bir terapi gibiydi. Deniz serin, güneş tatlı, seninle geçen her dakika huzur doluydu. Şehrin karmaşasından uzaklaşıp sadece anın tadını çıkardığımız en güzel kaçamaklardan biri oldu.",
+        x: 40.8592605,
+        y: 29.1132392,
+        order: 2,
+    },
+    {
+        id: "kartal-ev",
+        title: "Evde Mini Konserimiz 🎸🏠",
+        photoUrls: [
+            "kartalev/photo_2026-02-14_12-33-42.jpg",
+            "kartalev/photo_2026-02-14_12-33-44.jpg",
+        ],
+        description:
+            "Damla'nın evime geldiği ve birlikte gitar çalmaya çalıştığımız o kısa an benim için çok özel. Belki profesyonel değildik ama birlikte aynı ritmi yakalamaya çalışmak bile çok keyifliydi. Birkaç akor, bol kahkaha ve kalbimde kalan çok tatlı bir anı.",
+        x: 40.9144843,
+        y: 29.2009153,
+        order: 2,
+    },
 ];
 
 // ==========================================
