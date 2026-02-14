@@ -21,9 +21,9 @@
     let finaleTriggered = false;
 
     const PROXIMITY_THRESHOLD = 500;
-    const MIN_ZOOM = 12;
+    const MIN_ZOOM = 10;
     const MAX_ZOOM = 18;
-    const DEFAULT_ZOOM = 13;
+    const DEFAULT_ZOOM = 15;
     const MOVE_SPEED = 0.00025;
     const TRAIL_MAX = 15;
 
@@ -111,31 +111,41 @@
     //  START GAME
     // ==========================================
     function startGame() {
-        for (let i = 1; i <= totalSteps; i++) {
-            const s = document.getElementById(`step-${i}`);
-            if (s) s.classList.remove("active");
-        }
-
-        const game = document.getElementById("game");
-        game.style.display = "block";
-        document.body.style.background = "#fdf6f0";
+        // Smooth fade-out intro
+        const allSteps = document.querySelectorAll('.intro-step');
+        allSteps.forEach(s => {
+            s.style.transition = 'opacity 0.8s ease';
+            s.style.opacity = '0';
+        });
 
         setTimeout(() => {
-            // Load progress
-            progressStore.load(locations);
+            allSteps.forEach(s => s.classList.remove('active'));
 
-            setupMap();
-            setupEventListeners();
-            setupKeyboard();
-            setupDpad();
-            setupSheetGestures();
-            setupLightbox();
-            setupSettings();
-            updateScore();
-            updateHintPill();
+            const game = document.getElementById("game");
+            game.style.display = "block";
+            game.style.opacity = "0";
+            game.style.transition = "opacity 1s ease";
+            document.body.style.background = "#fdf6f0";
 
-            setTimeout(() => showToast("🏫", "Okula gel, seninle tanışalım! 💕"), 600);
-        }, 100);
+            setTimeout(() => {
+                game.style.opacity = "1";
+
+                // Load progress
+                progressStore.load(locations);
+
+                setupMap();
+                setupEventListeners();
+                setupKeyboard();
+                setupDpad();
+                setupSheetGestures();
+                setupLightbox();
+                setupSettings();
+                updateScore();
+                updateHintPill();
+
+                setTimeout(() => showToast("🏫", "Okula git, seninle tanışalım! 💕"), 600);
+            }, 50);
+        }, 800);
     }
 
     // ==========================================
@@ -190,8 +200,11 @@
     //  MAP SETUP
     // ==========================================
     function setupMap() {
-        const pointBounds = L.latLngBounds(locations.map(a => [a.x, a.y]));
-        const paddedBounds = pointBounds.pad(0.3);
+        // Include spawn point AND all location points in bounds
+        const allPoints = locations.map(a => [a.x, a.y]);
+        if (config.charSpawn) allPoints.push([config.charSpawn.x, config.charSpawn.y]);
+        const pointBounds = L.latLngBounds(allPoints);
+        const paddedBounds = pointBounds.pad(0.4);
         mapBounds = paddedBounds;
 
         map = L.map("map", {

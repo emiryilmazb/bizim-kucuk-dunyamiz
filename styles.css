@@ -204,9 +204,17 @@ body {
 }
 
 .mission-badge {
-  font-size: 3rem;
   margin-bottom: 0.75rem;
   animation: badgeBounce 1.5s ease-in-out infinite;
+}
+
+.mission-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 20px rgba(232, 128, 127, 0.4);
 }
 
 @keyframes badgeBounce {
