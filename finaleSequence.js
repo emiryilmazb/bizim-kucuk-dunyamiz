@@ -1,27 +1,27 @@
 // ==========================================
-// 🎬 Finale Sequence — Google Earth-style zoom out
+// 🎬 Finale Sequence — 3D Globe zoom out
 // ==========================================
 
 const finaleSequence = (() => {
     let isPlaying = false;
 
     /**
-     * Trigger the full cinematic finale sequence.
-     * Stages:
+     * Trigger the cinematic finale:
      *   1. Fade out UI
-     *   2. Google Earth-style zoom: current → 11 → 6 → 3 (staged flyTo)
-     *   3. Once fully zoomed out, crossfade to finale overlay
+     *   2. Quick map zoom-out (city → region)
+     *   3. Crossfade to 3D globe
      *   4. Show final text + button
      */
     function trigger(map) {
         if (isPlaying) return;
         isPlaying = true;
 
-        // Remove map bounds so we can zoom out freely
+        // Remove bounds so we can zoom out
         map.setMaxBounds(null);
         map.setMinZoom(1);
 
         const overlay = document.getElementById("finale-overlay");
+        const globeCanvas = document.getElementById("globe-canvas");
         const hud = document.querySelector(".hud");
         const dpad = document.getElementById("dpad");
         const progressBar = document.querySelector(".game-progress");
@@ -45,7 +45,7 @@ const finaleSequence = (() => {
             fogCanvas.style.opacity = "0";
         }
 
-        // Disable map interaction during cinematic
+        // Disable map interaction
         map.dragging.disable();
         map.touchZoom.disable();
         map.doubleClickZoom.disable();
@@ -53,57 +53,59 @@ const finaleSequence = (() => {
         map.boxZoom.disable();
         map.keyboard.disable();
 
-        // 2) Google Earth-style staged zoom
+        // 2) Quick zoom-out on real map (just 2 stages)
         const center = map.getCenter();
-
-        // Stage 1: zoom to 11 (neighbourhood → city)
         setTimeout(() => {
-            map.flyTo(center, 11, { duration: 2, easeLinearity: 0.2 });
+            map.flyTo(center, 8, { duration: 2, easeLinearity: 0.2 });
         }, 400);
 
-        // Stage 2: zoom to 6 (city → country)
         setTimeout(() => {
-            map.flyTo(center, 6, { duration: 2.5, easeLinearity: 0.15 });
-        }, 2800);
+            map.flyTo(center, 5, { duration: 2, easeLinearity: 0.15 });
+        }, 2600);
 
-        // Stage 3: zoom to 3 (country → continent)
+        // 3) Start globe and crossfade
         setTimeout(() => {
-            map.flyTo(center, 3, { duration: 3, easeLinearity: 0.1 });
-        }, 5800);
+            // Initialize and start globe renderer
+            if (globeCanvas) {
+                globeRenderer.init(globeCanvas);
+                globeRenderer.start();
+            }
 
-        // Stage 4: zoom to 2 (full world view)
-        setTimeout(() => {
-            map.flyTo([30, 30], 2, { duration: 2.5, easeLinearity: 0.1 });
-        }, 9200);
-
-        // 3) Crossfade overlay once zoom completes
-        setTimeout(() => {
+            // Show the finale overlay (dark bg + globe)
             overlay.classList.add("show");
 
-            // Show skip immediately
+            // Show skip button
             setTimeout(() => {
                 const skip = overlay.querySelector(".finale-skip");
                 if (skip) skip.classList.add("show");
-            }, 300);
+            }, 400);
 
-            // Show final text
+            // Show final text after globe is established
             setTimeout(() => {
                 const text = overlay.querySelector(".finale-text");
                 if (text) text.classList.add("show");
-            }, 1500);
+            }, 2000);
 
             // Show button
             setTimeout(() => {
                 const btn = overlay.querySelector(".finale-btn");
                 if (btn) btn.classList.add("show");
-            }, 3000);
-        }, 12000);
+            }, 3500);
+        }, 5000);
     }
 
     /** Skip to the end of the animation */
     function skip() {
         const overlay = document.getElementById("finale-overlay");
+        const globeCanvas = document.getElementById("globe-canvas");
         if (!overlay) return;
+
+        // Start globe if not already
+        if (globeCanvas && !globeRenderer) {
+            globeRenderer.init(globeCanvas);
+            globeRenderer.start();
+        }
+
         overlay.classList.add("show");
         const text = overlay.querySelector(".finale-text");
         const btn = overlay.querySelector(".finale-btn");
@@ -111,6 +113,9 @@ const finaleSequence = (() => {
         if (text) text.classList.add("show");
         if (btn) btn.classList.add("show");
         if (skipBtn) skipBtn.style.display = "none";
+
+        // Start globe anyway
+        try { globeRenderer.start(); } catch (e) { }
     }
 
     /** Show the sweet note area after button click */

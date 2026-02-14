@@ -8,7 +8,7 @@
 
     // ---------- Introduction State ----------
     let currentStep = 1;
-    const totalSteps = 4;
+    const totalSteps = 3;
 
     // ---------- Game State ----------
     let map, mapBounds, characterMarker;
@@ -64,7 +64,6 @@
 
         document.getElementById("step-1").addEventListener("click", () => goToStep(2));
         document.getElementById("step-2").addEventListener("click", () => goToStep(3));
-        document.getElementById("step-3").addEventListener("click", () => goToStep(4));
         document.getElementById("btn-start").addEventListener("click", (e) => {
             e.stopPropagation();
             startGame();
@@ -80,7 +79,6 @@
         if (next) next.classList.add("active");
         if (step === 2) animateStep2();
         if (step === 3) animateStep3();
-        if (step === 4) animateStep4();
     }
 
     function animateStep2() {
@@ -92,13 +90,6 @@
     }
 
     function animateStep3() {
-        const cards = document.querySelectorAll(".mem-card");
-        cards.forEach((card, i) => {
-            setTimeout(() => card.classList.add("show"), i * 200 + 300);
-        });
-    }
-
-    function animateStep4() {
         const rules = document.querySelectorAll(".rule");
         rules.forEach((rule, i) => {
             setTimeout(() => rule.classList.add("show"), i * 250 + 300);

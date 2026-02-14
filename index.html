@@ -46,31 +46,12 @@
     </div>
 
     <!-- ==========================================
-         INTRO — Step 3: Memories Reveal
+         INTRO — Step 3: Mission Briefing
          ========================================== -->
     <div class="intro-step step-3" id="step-3">
       <div class="step-content">
-        <div class="memories-grid" id="memories-grid">
-          <div class="mem-card"><span>💕</span></div>
-          <div class="mem-card"><span>🌅</span></div>
-          <div class="mem-card"><span>🎭</span></div>
-          <div class="mem-card"><span>🏰</span></div>
-          <div class="mem-card"><span>🎨</span></div>
-          <div class="mem-card"><span>✨</span></div>
-        </div>
-        <h2 class="step3-title" id="step3-title">Bu anıları hatırlıyor musun?</h2>
-        <p class="step3-sub">Her biri İstanbul'un bir köşesinde saklı...</p>
-        <div class="step3-tap">dokun 🗺️</div>
-      </div>
-    </div>
-
-    <!-- ==========================================
-         INTRO — Step 4: Mission
-         ========================================== -->
-    <div class="intro-step step-4" id="step-4">
-      <div class="step-content">
         <div class="mission-badge">🎮</div>
-        <h2 class="step4-title">Görev: Anıları Keşfet</h2>
+        <h2 class="step3-title">Görev: Anıları Keşfet</h2>
         <div class="mission-rules">
           <div class="rule"><span class="rule-icon">🗺️</span><span>Haritaya dokunarak ilerle</span></div>
           <div class="rule"><span class="rule-icon">🎮</span><span>Yön tuşlarıyla kontrol et</span></div>
@@ -186,39 +167,8 @@
          FINALE OVERLAY
          ========================================== -->
     <div class="finale-overlay" id="finale-overlay">
-      <!-- World Map SVG Background -->
-      <div class="finale-world-bg">
-        <svg class="world-svg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-          <!-- Simplified world continents in pastel -->
-          <ellipse cx="500" cy="250" rx="480" ry="230" fill="none" stroke="rgba(232,128,127,0.15)" stroke-width="2"/>
-          <!-- North America -->
-          <path d="M150,120 Q170,90 220,85 Q260,80 280,100 Q300,120 290,150 Q280,180 250,200 Q220,220 190,210 Q160,200 140,170 Q130,150 150,120Z" fill="rgba(252,228,236,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
-          <!-- South America -->
-          <path d="M240,250 Q260,230 280,240 Q300,260 290,300 Q280,340 260,370 Q240,390 230,360 Q220,330 225,290 Q230,260 240,250Z" fill="rgba(243,229,245,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
-          <!-- Europe -->
-          <path d="M440,100 Q460,80 490,90 Q510,100 520,120 Q530,140 510,155 Q490,165 470,160 Q450,150 440,130 Q435,115 440,100Z" fill="rgba(255,243,224,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
-          <!-- Africa -->
-          <path d="M460,180 Q480,160 510,170 Q530,190 535,230 Q540,270 530,310 Q510,340 490,350 Q470,340 460,310 Q450,270 455,230 Q458,200 460,180Z" fill="rgba(252,228,236,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
-          <!-- Asia -->
-          <path d="M540,80 Q580,60 640,70 Q700,80 740,100 Q770,120 760,160 Q740,190 700,200 Q660,210 620,200 Q580,190 560,160 Q540,130 535,105 Q535,90 540,80Z" fill="rgba(243,229,245,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
-          <!-- Australia -->
-          <path d="M720,300 Q750,280 780,290 Q800,310 790,340 Q770,360 740,350 Q720,340 715,320 Q715,305 720,300Z" fill="rgba(255,243,224,0.5)" stroke="rgba(232,128,127,0.2)" stroke-width="1"/>
-          <!-- Heart pin on Istanbul -->
-          <g transform="translate(495,130)">
-            <circle cx="0" cy="0" r="6" fill="rgba(232,128,127,0.8)">
-              <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite"/>
-            </circle>
-            <circle cx="0" cy="0" r="12" fill="none" stroke="rgba(232,128,127,0.3)" stroke-width="1">
-              <animate attributeName="r" values="12;18;12" dur="2s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
-            </circle>
-          </g>
-          <!-- Dotted connections between continents -->
-          <line x1="280" y1="150" x2="440" y2="120" stroke="rgba(232,128,127,0.15)" stroke-width="1" stroke-dasharray="4,6"/>
-          <line x1="510" y1="155" x2="540" y2="120" stroke="rgba(232,128,127,0.15)" stroke-width="1" stroke-dasharray="4,6"/>
-          <line x1="700" y1="200" x2="720" y2="300" stroke="rgba(232,128,127,0.15)" stroke-width="1" stroke-dasharray="4,6"/>
-        </svg>
-      </div>
+      <!-- 3D Globe Canvas -->
+      <canvas class="globe-canvas" id="globe-canvas"></canvas>
 
       <!-- Skip button -->
       <button class="finale-skip" id="finale-skip-btn">Atla →</button>
@@ -250,6 +200,7 @@
     <script src="progressStore.js"></script>
     <script src="markerManager.js"></script>
     <script src="fogOverlay.js"></script>
+    <script src="globeRenderer.js"></script>
     <script src="finaleSequence.js"></script>
     <script src="app.js"></script>
   </body>
