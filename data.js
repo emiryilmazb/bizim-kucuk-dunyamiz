@@ -90,7 +90,7 @@ const locations = [
             "kartalev/photo_2026-02-14_12-33-44.jpg",
         ],
         description:
-            "Damla'nın evime geldiği ve birlikte gitar çalmaya çalıştığımız o kısa an benim için çok özel. Belki profesyonel değildik ama birlikte aynı ritmi yakalamaya çalışmak bile çok keyifliydi. Birkaç akor, bol kahkaha ve kalbimde kalan çok tatlı bir anı.",
+            "Evime geldiğin ve birlikte gitar çalmaya çalıştığımız o kısa an benim için çok özel. Belki profesyonel değildik ama birlikte aynı ritmi yakalamaya çalışmak bile çok keyifliydi. Birkaç akor, bol kahkaha ve kalbimde kalan çok tatlı bir anı.",
         x: 40.9144843,
         y: 29.2009153,
         order: 2,
@@ -117,7 +117,7 @@ const locations = [
             "pablo/photo_2026-02-14_12-35-05.jpg",
         ],
         description:
-            "Sürekli gittiğimiz, bazen uzun dedikodular yaptığımız bazen de bilgisayarları açıp yan yana Baldur's Gate oynadığımız en tatlı kafelerden biri. Kahveler akarken bir yandan plan yaptık, bir yandan oyunda loot kovalamaya çalıştık. Kısacası Pablo bizim hem sohbet hem oyun üssümüz oldu.",
+            "Sürekli gittiğimiz, bazen uzun dedikodular yaptığımız bazen de bilgisayarları açıp yan yana Baldur's Gate oynadığımız en tatlı kafelerden biri. Kahveler akarken bir yandan plan yaptık, bir yandan oyunda loot kovalamaya çalıştık (ÇOĞUNLUKLA SEN :D). Kısacası Pablo bizim hem sohbet hem oyun üssümüz oldu.",
         x: 40.989146,
         y: 29.0235335,
         order: 2,
@@ -144,7 +144,7 @@ const locations = [
             "spor/photo_2026-02-14_12-35-34.jpg",
         ],
         description:
-            "Kız arkadaşımla birlikte spora geldiğimiz bu günün fotoğrafı tam bir karakter özeti gibi: Damla manken gibi ışıl ışıl, ben ise yeni seti bitirmiş nefes nefese benchte hayata tutunuyorum. Ama yan yana olduğumuz her an gibi, yorgunluğu bile tatlı bir anıya çevirdi.",
+            "Birlikte spora geldiğimiz bu günün fotoğrafı tam bir karakter özeti gibi: sen yine ışıl ışıl parlıyorsun, ben de senin için yeni seti bitirmiş nefes nefese benchte hayata tutunuyorum. Ama sen yanımdayken en zor antrenman bile en tatlı anıya dönüşüyor.",
         x: 40.9364192,
         y: 29.1257523,
         order: 2,
@@ -156,7 +156,7 @@ const locations = [
             "camlica/photo_2026-02-14_12-35-27.jpg",
         ],
         description:
-            "Özel bir günü kutlamak için gündüz vakti Çamlıca Kulesi'ne gitmiştik. Kuledeki kral ve kraliçe tahtına benzeyen koltuklara oturup birbirimize bakarken zaman sanki durmuştu. Manzara güzeldi ama en güzel görüntü yine karşımda oturan sendin.",
+            "Kutlama için Çamlıca Kulesi'ne gitmiştik. Kuledeki muhteşem yüzyıldan çıkma tahtlara oturup birbirimize bakarken zaman sanki durmuştu. Manzara güzeldi ama en güzel görüntü yine yanımda oturan sendin.",
         x: 41.0163191,
         y: 29.0655582,
         order: 2,
