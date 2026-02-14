@@ -1,42 +1,66 @@
 // ==========================================
-// 🌍 Globe Renderer — 3D rotating Earth on canvas
+// 🌍 Globe Renderer — cinematic zoom-out Earth
 // ==========================================
 
 const globeRenderer = (() => {
-    let canvas, ctx, w, h, cx, cy, r;
-    let rotation = 1.8; // start roughly showing Europe/Turkey
-    let animId = null;
-    let running = false;
-    let istanbulPulse = 0;
+    let canvas = null;
+    let ctx = null;
+    let w = 0;
+    let h = 0;
+    let cx = 0;
+    let cy = 0;
+    let baseRadius = 0;
 
-    // Simplified continent outlines as [lat, lng] polylines
-    // (very simplified shapes for performance)
+    let running = false;
+    let animId = null;
+    let rotation = 1.78;
+    let cityPulse = 0;
+
+    let introActive = true;
+    let introStart = 0;
+    const INTRO_DURATION_MS = 6400;
+    let resizeBound = false;
+
+    let stars = [];
+
+    const istanbul = { lat: 41.01, lng: 28.98 };
+
+    // Simplified continent outlines [lng, lat]
     const continents = [
-        // Europe
         [[-10, 35], [0, 38], [10, 38], [20, 45], [30, 50], [25, 55], [35, 60], [30, 65], [15, 70], [5, 65], [0, 60], [-10, 50], [-10, 35]].map(c => ({ lng: c[0], lat: c[1] })),
-        // Africa
         [[-15, 30], [0, 32], [15, 30], [20, 15], [25, 0], [20, -10], [30, -25], [25, -35], [15, -35], [5, -30], [-5, -10], [-15, 10], [-15, 30]].map(c => ({ lng: c[0], lat: c[1] })),
-        // Asia
         [[30, 45], [40, 42], [50, 40], [60, 45], [70, 40], [80, 30], [90, 25], [100, 22], [110, 20], [120, 30], [130, 35], [140, 40], [140, 50], [130, 55], [120, 55], [100, 60], [80, 65], [70, 60], [50, 50], [40, 48], [30, 45]].map(c => ({ lng: c[0], lat: c[1] })),
-        // North America
         [[-130, 50], [-120, 55], [-110, 60], [-100, 60], [-90, 55], [-80, 45], [-85, 35], [-90, 30], [-100, 25], [-105, 20], [-100, 30], [-110, 35], [-120, 40], [-130, 50]].map(c => ({ lng: c[0], lat: c[1] })),
-        // South America
         [[-80, 10], [-75, 5], [-70, 0], [-65, -5], [-60, -10], [-55, -15], [-50, -20], [-45, -25], [-50, -30], [-55, -35], [-65, -40], [-70, -50], [-75, -45], [-70, -30], [-75, -15], [-80, 0], [-80, 10]].map(c => ({ lng: c[0], lat: c[1] })),
-        // Australia
         [[115, -20], [120, -15], [130, -15], [140, -18], [150, -25], [148, -30], [145, -35], [135, -35], [125, -30], [115, -25], [115, -20]].map(c => ({ lng: c[0], lat: c[1] })),
     ];
 
-    // Istanbul coords
-    const istanbul = { lat: 41.01, lng: 28.98 };
+    function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+    }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    function easeOutCubic(t) {
+        const x = clamp(t, 0, 1);
+        return 1 - Math.pow(1 - x, 3);
+    }
 
     function init(canvasEl) {
         canvas = canvasEl;
+        if (!canvas) return;
         ctx = canvas.getContext("2d");
         resize();
-        window.addEventListener("resize", resize);
+        if (!resizeBound) {
+            window.addEventListener("resize", resize);
+            resizeBound = true;
+        }
     }
 
     function resize() {
+        if (!canvas || !ctx) return;
         const dpr = window.devicePixelRatio || 1;
         w = canvas.clientWidth;
         h = canvas.clientHeight;
@@ -45,151 +69,131 @@ const globeRenderer = (() => {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         cx = w / 2;
         cy = h / 2;
-        r = Math.min(w, h) * 0.35;
+        baseRadius = Math.min(w, h);
+        regenerateStars();
     }
 
-    /** Project lat/lng to 3D sphere then to 2D screen */
-    function project(lat, lng) {
+    function regenerateStars() {
+        const count = Math.max(240, Math.floor((w * h) / 5000));
+        stars = [];
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                size: 0.35 + Math.random() * 1.6,
+                alpha: 0.18 + Math.random() * 0.82,
+                twinkle: 0.6 + Math.random() * 2.4,
+                phase: Math.random() * Math.PI * 2,
+            });
+        }
+    }
+
+    function project(lat, lng, radius) {
         const phi = (90 - lat) * (Math.PI / 180);
-        const theta = (lng + rotation * (180 / Math.PI)) * (Math.PI / 180);
+        const theta = (lng * (Math.PI / 180)) + rotation;
 
-        const x3d = r * Math.sin(phi) * Math.cos(theta);
-        const y3d = r * Math.cos(phi);
-        const z3d = r * Math.sin(phi) * Math.sin(theta);
+        const x3d = radius * Math.sin(phi) * Math.cos(theta);
+        const y3d = radius * Math.cos(phi);
+        const z3d = radius * Math.sin(phi) * Math.sin(theta);
 
-        // Only visible if facing us (z > 0)
+        const cameraDistance = radius * 3.2;
+        const perspective = cameraDistance / (cameraDistance - z3d);
+
         return {
-            x: cx + x3d,
-            y: cy - y3d,
+            x: cx + x3d * perspective,
+            y: cy - y3d * perspective,
             z: z3d,
-            visible: z3d > 0
+            visible: z3d > -radius * 0.2,
+            scale: perspective,
         };
     }
 
-    function drawGlobe() {
-        ctx.clearRect(0, 0, w, h);
+    function drawBackground(progress, time) {
+        const bg = ctx.createRadialGradient(
+            cx,
+            cy * 0.7,
+            Math.min(w, h) * 0.08,
+            cx,
+            cy,
+            Math.max(w, h) * 0.85
+        );
+        bg.addColorStop(0, "#182846");
+        bg.addColorStop(0.45, "#0d1226");
+        bg.addColorStop(1, "#04050a");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
 
-        // Stars background
-        drawStars();
-
-        // Atmosphere glow
-        const atmoGrad = ctx.createRadialGradient(cx, cy, r * 0.9, cx, cy, r * 1.3);
-        atmoGrad.addColorStop(0, "rgba(100, 180, 255, 0.08)");
-        atmoGrad.addColorStop(0.5, "rgba(100, 180, 255, 0.04)");
-        atmoGrad.addColorStop(1, "transparent");
-        ctx.fillStyle = atmoGrad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r * 1.3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Ocean sphere
-        const oceanGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 0, cx, cy, r);
-        oceanGrad.addColorStop(0, "rgba(40, 80, 140, 0.7)");
-        oceanGrad.addColorStop(0.6, "rgba(25, 60, 120, 0.65)");
-        oceanGrad.addColorStop(1, "rgba(15, 40, 80, 0.6)");
-        ctx.fillStyle = oceanGrad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Sphere outline
-        ctx.strokeStyle = "rgba(100, 180, 255, 0.25)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Latitude/longitude grid lines (subtle)
-        drawGridLines();
-
-        // Continents
-        continents.forEach(cont => drawContinent(cont));
-
-        // Istanbul pin
-        drawIstanbulPin();
-
-        // Specular highlight
-        const specGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.35, 0, cx - r * 0.3, cy - r * 0.35, r * 0.6);
-        specGrad.addColorStop(0, "rgba(255, 255, 255, 0.12)");
-        specGrad.addColorStop(1, "transparent");
-        ctx.fillStyle = specGrad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    let stars = [];
-    function drawStars() {
-        if (stars.length === 0) {
-            for (let i = 0; i < 120; i++) {
-                stars.push({
-                    x: Math.random() * w,
-                    y: Math.random() * h,
-                    s: 0.3 + Math.random() * 1.2,
-                    o: 0.2 + Math.random() * 0.5,
-                    twinkleSpeed: 0.5 + Math.random() * 2
-                });
-            }
-        }
-        const t = Date.now() / 1000;
-        stars.forEach(s => {
-            const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(t * s.twinkleSpeed));
-            ctx.fillStyle = `rgba(255,255,255,${s.o * twinkle})`;
+        const starOpacity = clamp((progress - 0.14) / 0.86, 0, 1);
+        stars.forEach((s, i) => {
+            const twinkle = 0.35 + 0.65 * Math.abs(Math.sin(time * s.twinkle + s.phase));
+            const parallaxX = (i % 2 === 0 ? 1 : -1) * 0.02 * time * (s.size / 2);
+            const x = (s.x + parallaxX + w) % w;
+            ctx.fillStyle = `rgba(255,255,255,${s.alpha * twinkle * starOpacity})`;
             ctx.beginPath();
-            ctx.arc(s.x, s.y, s.s, 0, Math.PI * 2);
+            ctx.arc(x, s.y, s.size, 0, Math.PI * 2);
             ctx.fill();
         });
     }
 
-    function drawGridLines() {
-        ctx.strokeStyle = "rgba(100, 180, 255, 0.08)";
-        ctx.lineWidth = 0.5;
+    function drawGrid(radius) {
+        ctx.strokeStyle = "rgba(133, 197, 255, 0.12)";
+        ctx.lineWidth = 0.75;
 
-        // Latitude lines
         for (let lat = -60; lat <= 60; lat += 30) {
             ctx.beginPath();
             let started = false;
-            for (let lng = 0; lng <= 360; lng += 5) {
-                const p = project(lat, lng);
+            for (let lng = -180; lng <= 180; lng += 4) {
+                const p = project(lat, lng, radius);
                 if (p.visible) {
-                    if (!started) { ctx.moveTo(p.x, p.y); started = true; }
-                    else ctx.lineTo(p.x, p.y);
-                } else { started = false; }
+                    if (!started) {
+                        ctx.moveTo(p.x, p.y);
+                        started = true;
+                    } else {
+                        ctx.lineTo(p.x, p.y);
+                    }
+                } else {
+                    started = false;
+                }
             }
             ctx.stroke();
         }
 
-        // Longitude lines
-        for (let lng = 0; lng < 360; lng += 30) {
+        for (let lng = -180; lng < 180; lng += 25) {
             ctx.beginPath();
             let started = false;
-            for (let lat = -90; lat <= 90; lat += 5) {
-                const p = project(lat, lng);
+            for (let lat = -90; lat <= 90; lat += 4) {
+                const p = project(lat, lng, radius);
                 if (p.visible) {
-                    if (!started) { ctx.moveTo(p.x, p.y); started = true; }
-                    else ctx.lineTo(p.x, p.y);
-                } else { started = false; }
+                    if (!started) {
+                        ctx.moveTo(p.x, p.y);
+                        started = true;
+                    } else {
+                        ctx.lineTo(p.x, p.y);
+                    }
+                } else {
+                    started = false;
+                }
             }
             ctx.stroke();
         }
     }
 
-    function drawContinent(points) {
-        ctx.fillStyle = "rgba(120, 180, 120, 0.35)";
-        ctx.strokeStyle = "rgba(150, 210, 150, 0.4)";
-        ctx.lineWidth = 1;
-
+    function drawContinent(points, radius) {
+        ctx.fillStyle = "rgba(122, 197, 143, 0.43)";
+        ctx.strokeStyle = "rgba(194, 242, 205, 0.32)";
+        ctx.lineWidth = 1.05;
         ctx.beginPath();
-        let started = false;
-        let allVisible = true;
 
-        points.forEach(pt => {
-            const p = project(pt.lat, pt.lng);
+        let started = false;
+        points.forEach((pt) => {
+            const p = project(pt.lat, pt.lng, radius);
             if (p.visible) {
-                if (!started) { ctx.moveTo(p.x, p.y); started = true; }
-                else ctx.lineTo(p.x, p.y);
-            } else {
-                allVisible = false;
+                if (!started) {
+                    ctx.moveTo(p.x, p.y);
+                    started = true;
+                } else {
+                    ctx.lineTo(p.x, p.y);
+                }
             }
         });
 
@@ -200,70 +204,135 @@ const globeRenderer = (() => {
         }
     }
 
-    function drawIstanbulPin() {
-        const p = project(istanbul.lat, istanbul.lng);
+    function drawIstanbulPin(radius, progress) {
+        if (progress < 0.58) return;
+        const p = project(istanbul.lat, istanbul.lng, radius);
         if (!p.visible) return;
 
-        istanbulPulse += 0.04;
-        const pulse = 0.7 + 0.3 * Math.sin(istanbulPulse * 3);
-        const outerPulse = 1 + 0.4 * Math.sin(istanbulPulse * 2);
+        cityPulse += 0.032;
+        const pulse = 0.72 + 0.28 * Math.sin(cityPulse * 3.1);
+        const ringScale = 1 + 0.35 * Math.sin(cityPulse * 2.2);
 
-        // Outer glow ring
-        ctx.strokeStyle = `rgba(232, 128, 127, ${0.25 * pulse})`;
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = `rgba(255, 149, 173, ${0.34 * pulse})`;
+        ctx.lineWidth = 1.45;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 12 * outerPulse, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 10 * ringScale, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Second glow ring
-        ctx.strokeStyle = `rgba(232, 128, 127, ${0.15 * pulse})`;
+        ctx.strokeStyle = `rgba(255, 149, 173, ${0.18 * pulse})`;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 20 * outerPulse, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 18 * ringScale, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Core dot
-        const dotGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 6);
-        dotGrad.addColorStop(0, "rgba(232, 128, 127, 0.95)");
-        dotGrad.addColorStop(0.6, "rgba(232, 128, 127, 0.7)");
-        dotGrad.addColorStop(1, "rgba(232, 128, 127, 0)");
+        const dotGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 8);
+        dotGrad.addColorStop(0, "rgba(255, 179, 194, 0.96)");
+        dotGrad.addColorStop(0.6, "rgba(255, 122, 153, 0.72)");
+        dotGrad.addColorStop(1, "rgba(255, 122, 153, 0)");
         ctx.fillStyle = dotGrad;
         ctx.beginPath();
         ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
         ctx.fill();
 
-        // Bright center
-        ctx.fillStyle = "#fff";
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
         ctx.fill();
-
-        // "İstanbul" label
-        ctx.font = "500 11px 'Outfit', sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.7)";
-        ctx.textAlign = "left";
-        ctx.fillText("İstanbul 💖", p.x + 14, p.y + 4);
     }
 
-    function animate() {
+    function drawGlobe(progress, time) {
+        const eased = easeOutCubic(progress);
+        const radius = baseRadius * (introActive ? lerp(2.7, 0.46, eased) : 0.46);
+
+        drawBackground(progress, time);
+
+        const atmosphere = ctx.createRadialGradient(cx, cy, radius * 0.6, cx, cy, radius * 1.42);
+        atmosphere.addColorStop(0, "rgba(102, 184, 255, 0.16)");
+        atmosphere.addColorStop(0.4, "rgba(80, 154, 255, 0.08)");
+        atmosphere.addColorStop(1, "rgba(80, 154, 255, 0)");
+        ctx.fillStyle = atmosphere;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.42, 0, Math.PI * 2);
+        ctx.fill();
+
+        const ocean = ctx.createRadialGradient(cx - radius * 0.42, cy - radius * 0.38, radius * 0.05, cx, cy, radius);
+        ocean.addColorStop(0, "rgba(72, 138, 210, 0.9)");
+        ocean.addColorStop(0.58, "rgba(35, 92, 170, 0.86)");
+        ocean.addColorStop(1, "rgba(19, 45, 112, 0.82)");
+        ctx.fillStyle = ocean;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        drawGrid(radius);
+        continents.forEach(cont => drawContinent(cont, radius));
+
+        const shade = ctx.createLinearGradient(cx - radius * 1.2, cy, cx + radius * 1.1, cy + radius * 0.2);
+        shade.addColorStop(0, "rgba(255,255,255,0.13)");
+        shade.addColorStop(0.45, "rgba(255,255,255,0)");
+        shade.addColorStop(1, "rgba(0, 0, 0, 0.22)");
+        ctx.fillStyle = shade;
+        ctx.fillRect(cx - radius * 1.4, cy - radius * 1.4, radius * 2.8, radius * 2.8);
+
+        ctx.restore();
+
+        ctx.strokeStyle = "rgba(140, 198, 255, 0.34)";
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        drawIstanbulPin(radius, progress);
+    }
+
+    function animate(now) {
         if (!running) return;
-        rotation += 0.003; // slow rotation
-        drawGlobe();
+
+        const time = now / 1000;
+        const rawProgress = introActive
+            ? clamp((now - introStart) / INTRO_DURATION_MS, 0, 1)
+            : 1;
+        if (introActive && rawProgress >= 1) introActive = false;
+
+        const rotateSpeed = introActive
+            ? lerp(0.00085, 0.0028, easeOutCubic(rawProgress))
+            : 0.0033;
+        rotation += rotateSpeed;
+
+        drawGlobe(rawProgress, time);
         animId = requestAnimationFrame(animate);
     }
 
-    function start() {
-        if (running) return;
-        running = true;
-        stars = []; // regenerate on start
-        resize();
-        animate();
+    function start(options = {}) {
+        if (!canvas || !ctx) return;
+        const withIntro = options.intro !== false;
+        introActive = withIntro;
+        introStart = performance.now();
+        cityPulse = 0;
+
+        if (!running) {
+            running = true;
+            animId = requestAnimationFrame(animate);
+        } else if (!withIntro) {
+            skipIntro();
+        }
+    }
+
+    function skipIntro() {
+        introActive = false;
+        introStart = performance.now() - INTRO_DURATION_MS;
     }
 
     function stop() {
         running = false;
         if (animId) cancelAnimationFrame(animId);
+        animId = null;
     }
 
-    return { init, start, stop, resize };
+    return { init, start, skipIntro, stop, resize };
 })();

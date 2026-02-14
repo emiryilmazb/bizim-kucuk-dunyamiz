@@ -1141,13 +1141,15 @@ body {
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: var(--shadow-lg);
   transform: translateY(100%);
-  max-height: 60vh;
-  max-height: 60svh;
-  overflow-y: auto;
+  max-height: 68vh;
+  max-height: 68svh;
+  overflow: hidden;
   overscroll-behavior: contain;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   will-change: transform, max-height;
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), max-height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 .sheet.show {
@@ -1247,7 +1249,12 @@ body {
 }
 
 .sheet-body {
-  padding: 1rem 1.25rem 1.5rem;
+  padding: 1rem 1.25rem 1rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .sheet-title {
@@ -1316,7 +1323,9 @@ body {
 }
 
 .sheet-text-scroll {
-  max-height: 200px;
+  max-height: none;
+  flex: 1;
+  min-height: 120px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: 0.5rem;
@@ -1341,6 +1350,8 @@ body {
 .btn-sheet-close {
   display: block;
   width: 100%;
+  position: relative;
+  z-index: 4;
   padding: 0.75rem;
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: #fff;
@@ -1351,6 +1362,8 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: var(--fast);
+  margin-top: 0.8rem;
+  box-shadow: 0 10px 22px rgba(232, 128, 127, 0.28);
 }
 
 .btn-sheet-close:active {
@@ -1364,7 +1377,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 6000;
-  background: radial-gradient(ellipse at center, #2d1a25 0%, #1a0a0e 70%);
+  background: radial-gradient(circle at 50% 20%, #1a2440 0%, #0d1020 45%, #05060c 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1372,6 +1385,7 @@ body {
   opacity: 0;
   visibility: hidden;
   transition: opacity 1.5s ease, visibility 1.5s ease;
+  overflow: hidden;
 }
 
 .finale-overlay.show {
@@ -1391,9 +1405,13 @@ body {
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 2rem 1.5rem;
-  max-width: 420px;
-  width: 100%;
+  padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.1rem calc(env(safe-area-inset-bottom, 0px) + 1.1rem);
+  max-width: 560px;
+  width: min(94vw, 560px);
+  max-height: 92vh;
+  max-height: 92svh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .finale-text {
@@ -1482,28 +1500,36 @@ body {
   margin-top: 1.5rem;
   opacity: 0;
   transform: translateY(15px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.8s ease, transform 0.8s ease, max-height 0.9s ease;
 }
 
 .finale-note-area.show {
   opacity: 1;
   transform: translateY(0);
+  max-height: min(58vh, 58svh);
 }
 
 .finale-note-content {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
-  padding: 1.5rem;
+  padding: 1.2rem;
   text-align: left;
+  max-height: min(58vh, 58svh);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .finale-note-text {
   font-family: var(--font-d);
-  font-size: 0.95rem;
+  font-size: clamp(0.92rem, 2.9vw, 1.02rem);
   color: rgba(255, 255, 255, 0.85);
-  line-height: 1.9;
+  line-height: 1.82;
   white-space: pre-line;
+  overflow-wrap: anywhere;
+  margin: 0;
 }
 
 /* Heart particles for finale */

@@ -1,165 +1,222 @@
 // ==========================================
-// 🎬 Finale Sequence — 3D Globe zoom out
+// 🎬 Finale Sequence — Cinematic zoom-out + globe
 // ==========================================
 
 const finaleSequence = (() => {
     let isPlaying = false;
+    let typewriterTimer = null;
+    let heartStreamTimer = null;
+    let timers = [];
 
-    /**
-     * Trigger the cinematic finale:
-     *   1. Fade out UI
-     *   2. Quick map zoom-out (city → region)
-     *   3. Crossfade to 3D globe
-     *   4. Show final text + button
-     */
-    function trigger(map) {
-        if (isPlaying) return;
-        isPlaying = true;
+    function addTimer(cb, ms) {
+        const id = setTimeout(cb, ms);
+        timers.push(id);
+        return id;
+    }
 
-        // Remove bounds so we can zoom out
-        map.setMaxBounds(null);
-        map.setMinZoom(1);
+    function clearTimers() {
+        timers.forEach(clearTimeout);
+        timers = [];
+        if (typewriterTimer) {
+            clearInterval(typewriterTimer);
+            typewriterTimer = null;
+        }
+    }
 
-        const overlay = document.getElementById("finale-overlay");
-        const globeCanvas = document.getElementById("globe-canvas");
+    function hideGameUI() {
         const hud = document.querySelector(".hud");
-        const dpad = document.getElementById("dpad");
+        const joystick = document.getElementById("joystick");
         const progressBar = document.querySelector(".game-progress");
         const distBadge = document.getElementById("distance-badge");
         const hintPill = document.getElementById("hint-pill");
-        const fogCanvas = document.getElementById("fog-canvas");
         const settingsBtn = document.getElementById("settings-btn");
+        const settingsPanel = document.getElementById("settings-panel");
+        const fogCanvas = document.getElementById("fog-canvas");
 
-        // 1) Fade out UI controls
-        [hud, dpad, progressBar, distBadge, hintPill, settingsBtn].forEach((el) => {
-            if (el) {
-                el.style.transition = "opacity 0.8s ease";
-                el.style.opacity = "0";
-                el.style.pointerEvents = "none";
-            }
+        [hud, joystick, progressBar, distBadge, hintPill, settingsBtn].forEach((el) => {
+            if (!el) return;
+            el.style.transition = "opacity 0.8s ease";
+            el.style.opacity = "0";
+            el.style.pointerEvents = "none";
         });
 
-        // Fade out fog
-        if (fogCanvas) {
-            fogCanvas.style.transition = "opacity 1s ease";
-            fogCanvas.style.opacity = "0";
+        if (settingsPanel) {
+            settingsPanel.classList.remove("show");
+            settingsPanel.style.opacity = "0";
+            settingsPanel.style.pointerEvents = "none";
         }
 
-        // Disable map interaction
+        if (fogCanvas) {
+            fogCanvas.style.transition = "opacity 1.4s ease";
+            fogCanvas.style.opacity = "0";
+        }
+    }
+
+    function disableMapInteraction(map) {
         map.dragging.disable();
         map.touchZoom.disable();
         map.doubleClickZoom.disable();
         map.scrollWheelZoom.disable();
         map.boxZoom.disable();
         map.keyboard.disable();
-
-        // 2) Quick zoom-out on real map (just 2 stages)
-        const center = map.getCenter();
-        setTimeout(() => {
-            map.flyTo(center, 8, { duration: 2, easeLinearity: 0.2 });
-        }, 400);
-
-        setTimeout(() => {
-            map.flyTo(center, 5, { duration: 2, easeLinearity: 0.15 });
-        }, 2600);
-
-        // 3) Start globe and crossfade
-        setTimeout(() => {
-            // Initialize and start globe renderer
-            if (globeCanvas) {
-                globeRenderer.init(globeCanvas);
-                globeRenderer.start();
-            }
-
-            // Show the finale overlay (dark bg + globe)
-            overlay.classList.add("show");
-
-            // Show skip button
-            setTimeout(() => {
-                const skip = overlay.querySelector(".finale-skip");
-                if (skip) skip.classList.add("show");
-            }, 400);
-
-            // Show final text after globe is established
-            setTimeout(() => {
-                const text = overlay.querySelector(".finale-text");
-                if (text) text.classList.add("show");
-            }, 2000);
-
-            // Show button
-            setTimeout(() => {
-                const btn = overlay.querySelector(".finale-btn");
-                if (btn) btn.classList.add("show");
-            }, 3500);
-        }, 5000);
+        map.tap && map.tap.disable && map.tap.disable();
     }
 
-    /** Skip to the end of the animation */
-    function skip() {
-        const overlay = document.getElementById("finale-overlay");
+    function ensureGlobe(skipIntro) {
         const globeCanvas = document.getElementById("globe-canvas");
-        if (!overlay) return;
+        if (!globeCanvas) return;
+        globeRenderer.init(globeCanvas);
+        globeRenderer.start({ intro: !skipIntro });
+        if (skipIntro && typeof globeRenderer.skipIntro === "function") {
+            globeRenderer.skipIntro();
+        }
+    }
 
-        // Start globe if not already
-        if (globeCanvas && !globeRenderer) {
-            globeRenderer.init(globeCanvas);
-            globeRenderer.start();
+    function startMessageFlow(overlay) {
+        const message = overlay.querySelector(".finale-message");
+        if (!message) return;
+
+        const lines = [
+            "Seninle başlayan bu yolculuk, her gün daha da güzelleşiyor...",
+            "Şehirler değişse de kalbim hep seninle aynı yerde atıyor...",
+            "Birlikteyken dünya bize biraz daha yakın, biraz daha parlak... 💖",
+        ];
+
+        message.style.transition = "opacity 0.45s ease, transform 0.45s ease";
+        message.innerHTML = lines[0];
+        message.style.opacity = "1";
+        message.style.transform = "translateY(0)";
+
+        lines.slice(1).forEach((line, idx) => {
+            addTimer(() => {
+                message.style.opacity = "0";
+                message.style.transform = "translateY(8px)";
+                addTimer(() => {
+                    message.innerHTML = line;
+                    message.style.opacity = "1";
+                    message.style.transform = "translateY(0)";
+                }, 220);
+            }, 1200 * (idx + 1));
+        });
+    }
+
+    function revealCinematicText() {
+        const overlay = document.getElementById("finale-overlay");
+        if (!overlay) return;
+        const text = overlay.querySelector(".finale-text");
+        const btn = overlay.querySelector(".finale-btn");
+        const skip = overlay.querySelector(".finale-skip");
+        if (skip) skip.classList.add("show");
+        addTimer(() => {
+            if (text) text.classList.add("show");
+            startMessageFlow(overlay);
+        }, 4200);
+        addTimer(() => btn && btn.classList.add("show"), 5700);
+    }
+
+    function trigger(map) {
+        if (isPlaying) return;
+        isPlaying = true;
+        clearTimers();
+
+        map.setMaxBounds(null);
+        map.setMinZoom(1);
+
+        hideGameUI();
+        disableMapInteraction(map);
+
+        const overlay = document.getElementById("finale-overlay");
+        if (overlay) {
+            overlay.classList.add("show");
+            overlay.classList.remove("note-open");
         }
 
+        ensureGlobe(false);
+
+        const center = map.getCenter();
+        map.flyTo(center, 9, { duration: 1.4, easeLinearity: 0.25 });
+        addTimer(() => {
+            map.flyTo(center, 5, { duration: 2.4, easeLinearity: 0.2 });
+        }, 1200);
+        addTimer(() => {
+            map.flyTo([18, 0], 2, { duration: 3.8, easeLinearity: 0.12 });
+        }, 3400);
+
+        revealCinematicText();
+    }
+
+    function skip() {
+        isPlaying = true;
+        clearTimers();
+
+        const overlay = document.getElementById("finale-overlay");
+        if (!overlay) return;
         overlay.classList.add("show");
+        overlay.classList.remove("note-open");
+
+        ensureGlobe(true);
+
         const text = overlay.querySelector(".finale-text");
         const btn = overlay.querySelector(".finale-btn");
         const skipBtn = overlay.querySelector(".finale-skip");
         if (text) text.classList.add("show");
+        startMessageFlow(overlay);
         if (btn) btn.classList.add("show");
         if (skipBtn) skipBtn.style.display = "none";
-
-        // Start globe anyway
-        try { globeRenderer.start(); } catch (e) { }
     }
 
-    /** Show the sweet note area after button click */
+    function spawnOneHeart() {
+        const container = document.getElementById("finale-overlay");
+        if (!container) return;
+        const hearts = ["💖", "💕", "💗", "💝", "❤️", "🩷"];
+        const el = document.createElement("div");
+        el.className = "finale-heart-particle";
+        el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        el.style.left = `${Math.random() * 110 - 5}%`;
+        el.style.animationDuration = `${3.6 + Math.random() * 3.2}s`;
+        el.style.fontSize = `${0.78 + Math.random() * 1.1}rem`;
+        el.style.opacity = `${0.48 + Math.random() * 0.45}`;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 8000);
+    }
+
+    function startHeartStream() {
+        if (heartStreamTimer) return;
+        for (let i = 0; i < 16; i++) addTimer(spawnOneHeart, i * 120);
+        heartStreamTimer = setInterval(spawnOneHeart, 260);
+    }
+
     function revealNote() {
+        const overlay = document.getElementById("finale-overlay");
         const noteArea = document.getElementById("finale-note-area");
         const noteText = document.getElementById("finale-note-text");
         const btn = document.querySelector(".finale-btn");
+        if (overlay) overlay.classList.add("note-open");
         if (noteArea) noteArea.classList.add("show");
-        if (btn) btn.style.display = "none";
+        if (btn) {
+            btn.classList.remove("show");
+            setTimeout(() => { btn.style.display = "none"; }, 250);
+        }
 
-        // Fill in the final message with typewriter effect
+        if (typewriterTimer) {
+            clearInterval(typewriterTimer);
+            typewriterTimer = null;
+        }
         if (noteText && typeof finalMesaj !== "undefined") {
             noteText.textContent = "";
             let i = 0;
-            const iv = setInterval(() => {
+            typewriterTimer = setInterval(() => {
                 if (i < finalMesaj.length) {
                     noteText.textContent += finalMesaj[i];
                     i++;
                 } else {
-                    clearInterval(iv);
+                    clearInterval(typewriterTimer);
+                    typewriterTimer = null;
                 }
-            }, 30);
+            }, 28);
         }
 
-        // Spawn heart particles
-        spawnHearts();
-    }
-
-    /** Cute heart particle animation */
-    function spawnHearts() {
-        const container = document.getElementById("finale-overlay");
-        if (!container) return;
-        const hearts = ["💖", "💕", "💗", "💝", "❤️", "🩷"];
-        for (let i = 0; i < 25; i++) {
-            const el = document.createElement("div");
-            el.className = "finale-heart-particle";
-            el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-            el.style.left = Math.random() * 100 + "%";
-            el.style.animationDelay = Math.random() * 2.5 + "s";
-            el.style.animationDuration = 3 + Math.random() * 2.5 + "s";
-            el.style.fontSize = 0.8 + Math.random() * 1.4 + "rem";
-            container.appendChild(el);
-            setTimeout(() => el.remove(), 6000);
-        }
+        startHeartStream();
     }
 
     return { trigger, skip, revealNote };

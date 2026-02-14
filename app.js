@@ -25,7 +25,10 @@
     const MIN_ZOOM = 8;
     const MAX_ZOOM = 18;
     const DEFAULT_ZOOM = 15;
-    const MOVE_SPEED = 0.00015;
+    const MOVE_SPEED = 0.00024;
+    const TAP_MOVE_DURATION_FACTOR = 1.05;
+    const TAP_MOVE_MIN_MS = 280;
+    const TAP_MOVE_MAX_MS = 2200;
     const CHAR_IDLE_SRC = "assets/us.png";
     const CHAR_MOVING_SRC = "assets/us_with_bmw.png";
     const INTRO_AVATAR_TO_CENTER_MS = 1100;
@@ -462,7 +465,10 @@
         const start = characterMarker.getLatLng();
         const startTime = performance.now();
         const dist = start.distanceTo(targetLL);
-        const duration = Math.min(Math.max(dist * 1.5, 400), 3000);
+        const duration = Math.min(
+            Math.max(dist * TAP_MOVE_DURATION_FACTOR, TAP_MOVE_MIN_MS),
+            TAP_MOVE_MAX_MS
+        );
         setCharacterMoving(true);
 
         function step(now) {
@@ -952,7 +958,6 @@
         let startY = 0, currentY = 0, isDragging = false;
 
         function onStart(e) {
-            if (sheet.scrollTop > 5 && sheet.classList.contains("expanded")) return;
             isDragging = true;
             startY = (e.touches ? e.touches[0] : e).clientY;
             currentY = startY;
@@ -981,12 +986,7 @@
             else { sheet.style.transform = ""; }
         }
 
-        [handle, sheet].forEach(el => {
-            el.addEventListener("touchstart", e => {
-                if (el === sheet && sheet.scrollTop > 5) return;
-                onStart(e);
-            }, { passive: true });
-        });
+        handle.addEventListener("touchstart", onStart, { passive: true });
 
         document.addEventListener("touchmove", e => { if (isDragging) onMove(e); }, { passive: true });
         document.addEventListener("touchend", onEnd);
