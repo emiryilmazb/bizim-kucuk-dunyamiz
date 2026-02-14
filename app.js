@@ -199,7 +199,7 @@
             zoom: DEFAULT_ZOOM,
             minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM,
             maxBounds: paddedBounds, maxBoundsViscosity: 1.0,
-            bounceAtZoomLimits: true, zoomControl: false, attributionControl: true,
+            bounceAtZoomLimits: true, zoomControl: false, attributionControl: false,
         });
 
         map.on("drag", () => map.panInsideBounds(paddedBounds, { animate: false }));

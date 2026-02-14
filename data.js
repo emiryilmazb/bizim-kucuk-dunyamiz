@@ -19,12 +19,12 @@ const locations = [
     {
         id: "ilk-tanisma",
         title: "İlk Tanıştığımız Gün ☕",
-        photoUrl: null,
+        photoUrl: "assets/1ilktanışma.jpeg",
         description:
-            "O gün bir kafede tesadüfen karşılaştık. Sen kahveni alırken gözlerimiz buluştu ve dünya bir an durdu. O andan itibaren her şey değişti.",
+            "İyi ki o gün o bahçeye çıkmışım, iyi ki seni görmüşüm. O an hayatımın en güzel tesadüfü oldu. Gözlerine baktığım ilk an, kalbimin sana ait olacağını biliyordum.",
         date: "14 Şubat 2023",
-        x: 41.0369,
-        y: 28.985,
+        x: 41.1054,
+        y: 28.9860,
         order: 1,
     },
     {
