@@ -101,11 +101,25 @@ const locations = [
         photoUrls: [
             "alsancak/photo_2026-02-14_12-33-59.jpg",
             "alsancak/photo_2026-02-14_12-34-02.jpg",
+            "alsancak/photo_2026-02-14_12-35-16.jpg",
         ],
         description:
             "Birlikte İzmir'e gitmişken Alsancak Gündoğdu Meydanı'nı da gezmeye çıkmıştık. Deniz kenarında yan yana oturup gün batımını izlediğimiz o anın huzuru hâlâ aklımda. Şehir başka bir güzeldi ama seninle olunca manzara daha da güzelleşti.",
         x: 38.4358061,
         y: 27.1394477,
+        order: 2,
+    },
+    {
+        id: "pablo-rihtim",
+        title: "Pablo'da Bizim Köşe ☕🎮",
+        photoUrls: [
+            "pablo/photo_2026-02-14_12-35-02.jpg",
+            "pablo/photo_2026-02-14_12-35-05.jpg",
+        ],
+        description:
+            "Sürekli gittiğimiz, bazen uzun dedikodular yaptığımız bazen de bilgisayarları açıp yan yana Baldur's Gate oynadığımız en tatlı kafelerden biri. Kahveler akarken bir yandan plan yaptık, bir yandan oyunda loot kovalamaya çalıştık. Kısacası Pablo bizim hem sohbet hem oyun üssümüz oldu.",
+        x: 40.989146,
+        y: 29.0235335,
         order: 2,
     },
 ];
