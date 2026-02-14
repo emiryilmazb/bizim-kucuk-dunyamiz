@@ -110,8 +110,8 @@ const finaleSequence = (() => {
         addTimer(() => {
             if (text) text.classList.add("show");
             startMessageFlow(overlay);
-        }, 4200);
-        addTimer(() => btn && btn.classList.add("show"), 5700);
+        }, 5000);
+        addTimer(() => btn && btn.classList.add("show"), 6500);
     }
 
     function trigger(map) {
@@ -134,13 +134,7 @@ const finaleSequence = (() => {
         ensureGlobe(false);
 
         const center = map.getCenter();
-        map.flyTo(center, 9, { duration: 1.4, easeLinearity: 0.25 });
-        addTimer(() => {
-            map.flyTo(center, 5, { duration: 2.4, easeLinearity: 0.2 });
-        }, 1200);
-        addTimer(() => {
-            map.flyTo([18, 0], 2, { duration: 3.8, easeLinearity: 0.12 });
-        }, 3400);
+        map.flyTo(center, 7, { duration: 2.2, easeLinearity: 0.18 });
 
         revealCinematicText();
     }
@@ -172,7 +166,7 @@ const finaleSequence = (() => {
         const el = document.createElement("div");
         el.className = "finale-heart-particle";
         el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-        el.style.left = `${Math.random() * 110 - 5}%`;
+        el.style.left = `${Math.random() * 100}%`;
         el.style.animationDuration = `${3.6 + Math.random() * 3.2}s`;
         el.style.fontSize = `${0.78 + Math.random() * 1.1}rem`;
         el.style.opacity = `${0.48 + Math.random() * 0.45}`;

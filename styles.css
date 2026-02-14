@@ -1386,6 +1386,7 @@ body {
   visibility: hidden;
   transition: opacity 1.5s ease, visibility 1.5s ease;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .finale-overlay.show {
@@ -1408,10 +1409,12 @@ body {
   padding: calc(env(safe-area-inset-top, 0px) + 1.5rem) 1.1rem calc(env(safe-area-inset-bottom, 0px) + 1.1rem);
   max-width: 560px;
   width: min(94vw, 560px);
-  max-height: 92vh;
-  max-height: 92svh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  max-height: 94vh;
+  max-height: 94svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .finale-text {
@@ -1501,6 +1504,7 @@ body {
   opacity: 0;
   transform: translateY(15px);
   max-height: 0;
+  width: 100%;
   overflow: hidden;
   transition: opacity 0.8s ease, transform 0.8s ease, max-height 0.9s ease;
 }
@@ -1520,6 +1524,13 @@ body {
   max-height: min(58vh, 58svh);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.finale-note-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .finale-note-text {
