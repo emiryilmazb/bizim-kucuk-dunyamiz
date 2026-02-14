@@ -42,6 +42,20 @@ const locations = [
         y: 29.0080142,
         order: 2,
     },
+    {
+        id: "tango-gecesi",
+        title: "İlk Tangomuz 💃🕺",
+        photoUrls: [
+            "tango/photo_2026-02-14_12-34-10.jpg",
+            "tango/photo_2026-02-14_12-34-12.jpg",
+            "tango/photo_2026-02-14_12-34-15.jpg",
+        ],
+        description:
+            "Okulun dans kulübünün verdiği tango eğitiminde birlikte piste çıktığımız anı hiç unutmuyorum. Adımlar bazen karışsa da göz göze geldiğimiz her anda gülüşün her şeyi kolaylaştırdı. O gece müzikle birlikte kalplerimiz de aynı ritimde attı.",
+        x: 41.014689,
+        y: 28.9054296,
+        order: 2,
+    },
 ];
 
 // ==========================================
