@@ -1109,12 +1109,6 @@ body {
     0 0 24px rgba(255, 93, 143, 0.35);
 }
 
-@media (min-width: 1024px) and (hover: hover) {
-  .joystick {
-    display: none;
-  }
-}
-
 .leaflet-bottom.leaflet-right {
   bottom: 142px !important;
 }

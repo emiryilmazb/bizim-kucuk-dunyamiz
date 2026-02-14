@@ -285,7 +285,9 @@
             minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM,
             maxBounds: paddedBounds, maxBoundsViscosity: 1.0,
             bounceAtZoomLimits: true, zoomControl: false, attributionControl: false,
+            doubleClickZoom: false,
         });
+        map.doubleClickZoom.disable();
 
         map.on("drag", () => map.panInsideBounds(paddedBounds, { animate: false }));
         map.createPane("guidePane");
