@@ -130,6 +130,8 @@ const finaleSequence = (() => {
             overlay.classList.add("show");
             overlay.classList.remove("note-open");
         }
+        bindLoveButton();
+        resetLoveScene();
 
         ensureGlobe(false);
 
@@ -147,6 +149,8 @@ const finaleSequence = (() => {
         if (!overlay) return;
         overlay.classList.add("show");
         overlay.classList.remove("note-open");
+        bindLoveButton();
+        resetLoveScene();
 
         ensureGlobe(true);
 
@@ -181,11 +185,65 @@ const finaleSequence = (() => {
         heartStreamTimer = setInterval(spawnOneHeart, 260);
     }
 
+    function resetLoveScene() {
+        const loveBtn = document.getElementById("finale-love-btn");
+        const loveScene = document.getElementById("finale-love-scene");
+        if (loveBtn) {
+            loveBtn.classList.remove("show");
+            loveBtn.style.display = "none";
+            loveBtn.disabled = true;
+        }
+        if (loveScene) {
+            loveScene.classList.remove("show");
+            loveScene.setAttribute("aria-hidden", "true");
+        }
+    }
+
+    function showLoveButton() {
+        const loveBtn = document.getElementById("finale-love-btn");
+        if (!loveBtn) return;
+        loveBtn.style.display = "inline-flex";
+        loveBtn.disabled = false;
+        requestAnimationFrame(() => loveBtn.classList.add("show"));
+    }
+
+    function revealLoveScene() {
+        const loveBtn = document.getElementById("finale-love-btn");
+        const loveScene = document.getElementById("finale-love-scene");
+
+        if (loveBtn) {
+            loveBtn.disabled = true;
+            loveBtn.classList.remove("show");
+            setTimeout(() => {
+                loveBtn.style.display = "none";
+            }, 260);
+        }
+
+        if (loveScene) {
+            loveScene.classList.add("show");
+            loveScene.setAttribute("aria-hidden", "false");
+        }
+
+        for (let i = 0; i < 24; i++) {
+            addTimer(spawnOneHeart, i * 35);
+        }
+        startHeartStream();
+    }
+
+    function bindLoveButton() {
+        const loveBtn = document.getElementById("finale-love-btn");
+        if (!loveBtn || loveBtn.dataset.bound === "1") return;
+        loveBtn.dataset.bound = "1";
+        loveBtn.addEventListener("click", revealLoveScene);
+    }
+
     function revealNote() {
         const overlay = document.getElementById("finale-overlay");
         const noteArea = document.getElementById("finale-note-area");
         const noteText = document.getElementById("finale-note-text");
         const btn = document.querySelector(".finale-btn");
+        bindLoveButton();
+        resetLoveScene();
         if (overlay) overlay.classList.add("note-open");
         if (noteArea) noteArea.classList.add("show");
         if (btn) {
@@ -207,8 +265,11 @@ const finaleSequence = (() => {
                 } else {
                     clearInterval(typewriterTimer);
                     typewriterTimer = null;
+                    addTimer(showLoveButton, 280);
                 }
             }, 28);
+        } else {
+            addTimer(showLoveButton, 280);
         }
 
         startHeartStream();

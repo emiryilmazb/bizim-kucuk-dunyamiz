@@ -1567,6 +1567,233 @@ body {
   height: 0;
 }
 
+.finale-love-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.95rem;
+  padding: 0.82rem 1.2rem;
+  border: 0;
+  border-radius: 999px;
+  max-width: 100%;
+  white-space: normal;
+  text-wrap: balance;
+  font-family: var(--font);
+  font-size: 0.96rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #4f1843;
+  background: linear-gradient(120deg, #ffd8ef 0%, #ffd0dd 38%, #ffe3a2 72%, #ffd3f7 100%);
+  background-size: 220% 220%;
+  box-shadow:
+    0 10px 26px rgba(255, 103, 175, 0.34),
+    0 6px 18px rgba(255, 220, 120, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.68);
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  animation: loveBtnGlow 2.6s ease-in-out infinite, loveBtnShift 4.2s linear infinite;
+}
+
+.finale-love-btn.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.finale-love-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.finale-love-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.8rem) 1rem calc(env(safe-area-inset-bottom, 0px) + 0.8rem);
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 0.78s ease;
+}
+
+.finale-love-scene.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.finale-love-aura {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 169, 220, 0.34) 0%, rgba(255, 169, 220, 0) 56%),
+    radial-gradient(circle at 20% 88%, rgba(255, 236, 169, 0.22) 0%, rgba(255, 236, 169, 0) 42%),
+    radial-gradient(circle at 82% 12%, rgba(173, 210, 255, 0.26) 0%, rgba(173, 210, 255, 0) 45%),
+    rgba(5, 8, 20, 0.46);
+  filter: saturate(1.2);
+  animation: loveAuraPulse 4.2s ease-in-out infinite;
+}
+
+.finale-love-card {
+  position: relative;
+  z-index: 1;
+  width: min(88vw, 520px);
+  border-radius: 28px;
+  padding: 1rem 1rem 1.2rem;
+  background: linear-gradient(155deg, rgba(255, 236, 250, 0.24), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 24px 60px rgba(255, 110, 192, 0.28),
+    0 10px 34px rgba(110, 166, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(30px) scale(0.84);
+  transition: opacity 0.78s ease, transform 0.78s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.finale-love-card::before {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0) 0deg,
+    rgba(255, 255, 255, 0.42) 56deg,
+    rgba(255, 255, 255, 0) 116deg,
+    rgba(255, 255, 255, 0) 360deg
+  );
+  animation: loveCardSpin 5s linear infinite;
+}
+
+.finale-love-card::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(255, 184, 226, 0.24), rgba(130, 189, 255, 0.2));
+}
+
+.finale-love-scene.show .finale-love-card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.finale-love-photo-wrap {
+  position: relative;
+  z-index: 1;
+  width: min(82vw, 420px);
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.84);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.34),
+    0 6px 28px rgba(255, 152, 212, 0.32);
+}
+
+.finale-love-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.15) rotate(-1.1deg);
+  filter: saturate(1.08) contrast(1.04) brightness(1.02);
+}
+
+.finale-love-scene.show .finale-love-img {
+  animation: lovePhotoIn 1.15s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.finale-love-text {
+  position: relative;
+  z-index: 1;
+  margin: 1rem 0 0;
+  text-align: center;
+  font-family: var(--font-d);
+  font-size: clamp(1.08rem, 4.6vw, 1.68rem);
+  line-height: 1.4;
+  color: #fff8ff;
+  text-shadow:
+    0 2px 16px rgba(255, 133, 209, 0.72),
+    0 1px 8px rgba(0, 0, 0, 0.46);
+  animation: loveTextSpark 2.5s ease-in-out infinite;
+}
+
+@keyframes loveBtnGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 26px rgba(255, 103, 175, 0.34),
+      0 6px 18px rgba(255, 220, 120, 0.26),
+      inset 0 1px 0 rgba(255, 255, 255, 0.68);
+  }
+  50% {
+    box-shadow:
+      0 14px 32px rgba(255, 130, 188, 0.48),
+      0 9px 24px rgba(255, 230, 146, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+}
+
+@keyframes loveBtnShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes loveAuraPulse {
+  0%,
+  100% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes loveCardSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lovePhotoIn {
+  0% {
+    transform: scale(1.32) rotate(-2.8deg);
+    filter: blur(4px) saturate(1.2) contrast(1.08) brightness(1.15);
+  }
+  100% {
+    transform: scale(1.05) rotate(0deg);
+    filter: saturate(1.08) contrast(1.04) brightness(1.02);
+  }
+}
+
+@keyframes loveTextSpark {
+  0%,
+  100% {
+    transform: scale(1);
+    text-shadow:
+      0 2px 16px rgba(255, 133, 209, 0.72),
+      0 1px 8px rgba(0, 0, 0, 0.46);
+  }
+  50% {
+    transform: scale(1.02);
+    text-shadow:
+      0 2px 22px rgba(255, 174, 226, 0.9),
+      0 1px 12px rgba(0, 0, 0, 0.56);
+  }
+}
+
 /* Heart particles for finale */
 .finale-heart-particle {
   position: absolute;
@@ -1634,6 +1861,32 @@ body {
     max-height: min(60vh, 60svh);
     font-size: clamp(0.85rem, 3.7vw, 0.96rem);
     line-height: 1.72;
+  }
+
+  .finale-love-btn {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 0.78rem 0.85rem;
+  }
+
+  .finale-love-card {
+    width: min(94vw, 520px);
+    padding: 0.85rem 0.85rem 1rem;
+    border-radius: 22px;
+  }
+
+  .finale-love-card::after {
+    border-radius: 18px;
+  }
+
+  .finale-love-photo-wrap {
+    width: min(88vw, 390px);
+    border-radius: 18px;
+  }
+
+  .finale-love-text {
+    margin-top: 0.8rem;
+    font-size: clamp(0.98rem, 4.8vw, 1.3rem);
   }
 }
 
