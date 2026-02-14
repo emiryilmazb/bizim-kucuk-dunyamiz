@@ -11,7 +11,7 @@ const config = {
 };
 
 // ==========================================
-// 📍 ANI NOKTALARI (Tümü İstanbul)
+// 📍 ANI NOKTALARI
 // Her anı için: id, baslik, tarih, metin, lat, lng, photoUrls, order
 //   - order: 1 = ilk gidilecek yer (okul), 2+ = sonra hepsi açılır
 //   - photoUrls: fotoğraf dizisi (birden fazla olabilir)
@@ -93,6 +93,19 @@ const locations = [
             "Damla'nın evime geldiği ve birlikte gitar çalmaya çalıştığımız o kısa an benim için çok özel. Belki profesyonel değildik ama birlikte aynı ritmi yakalamaya çalışmak bile çok keyifliydi. Birkaç akor, bol kahkaha ve kalbimde kalan çok tatlı bir anı.",
         x: 40.9144843,
         y: 29.2009153,
+        order: 2,
+    },
+    {
+        id: "alsancak-gunbatimi",
+        title: "Alsancak'ta Gün Batımı 🌇",
+        photoUrls: [
+            "alsancak/photo_2026-02-14_12-33-59.jpg",
+            "alsancak/photo_2026-02-14_12-34-02.jpg",
+        ],
+        description:
+            "Birlikte İzmir'e gitmişken Alsancak Gündoğdu Meydanı'nı da gezmeye çıkmıştık. Deniz kenarında yan yana oturup gün batımını izlediğimiz o anın huzuru hâlâ aklımda. Şehir başka bir güzeldi ama seninle olunca manzara daha da güzelleşti.",
+        x: 38.4358061,
+        y: 27.1394477,
         order: 2,
     },
 ];

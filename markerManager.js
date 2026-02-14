@@ -130,6 +130,7 @@ const markerManager = (() => {
             "swissotel-aksami": "🌃",
             "buyukada-plaj": "🌊",
             "kartal-ev": "🎸",
+            "alsancak-gunbatimi": "🌇",
         };
         if (byId[loc.id]) return byId[loc.id];
         const emojis = { 1: "📍", 2: "🌅", 3: "🎨", 4: "🎭", 5: "🏰" };
