@@ -122,6 +122,21 @@ const locations = [
         y: 29.0235335,
         order: 2,
     },
+    {
+        id: "bagdat-caddesi-kis",
+        title: "Bağdat Caddesi'nde Kış Yürüyüşü ❄️",
+        photoUrls: [
+            "caddebostan/photo_2026-02-14_12-34-17.jpg",
+            "caddebostan/photo_2026-02-14_12-34-19.jpg",
+            "caddebostan/photo_2026-02-14_12-34-24.jpg",
+            "caddebostan/photo_2026-02-14_12-34-27.jpg",
+        ],
+        description:
+            "Bağdat Caddesi'nde kışın ortasında dona dona yürüdüğümüz gün hâlâ aklımda. Ellerimiz buz gibiydi ama muhabbetimiz hiç bitmiyordu. Bir ara şakacıktan tango yapıp kahkahaya boğulmuştuk; soğuk hava vardı ama içimiz sıcacıktı.",
+        x: 40.9589496,
+        y: 29.083479,
+        order: 2,
+    },
 ];
 
 // ==========================================
